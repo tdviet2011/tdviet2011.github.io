@@ -693,3 +693,10 @@ img { max-width: 100%; }
 .extension-note { margin-top: 20px; font-size: 13px; }
 .extension-note strong { color: var(--text); font-weight: 500; }
 @media (max-width:760px) { .case-extension { padding: 20px 16px; } .case-extension p { font-size: 12px; } }
+.course-grades { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); }
+.course-grades .eyebrow { color: var(--subtle); }
+.course-grades ul { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 10px; }
+.course-grades li { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+.course-grades li svg { color: var(--green); flex-shrink: 0; }
+.course-grades li strong { margin-left: auto; color: var(--text); font: 500 15px 'Space Grotesk',sans-serif; }
+.course-grades li small { color: var(--subtle); font-size: 10px; margin-left: 2px; }
