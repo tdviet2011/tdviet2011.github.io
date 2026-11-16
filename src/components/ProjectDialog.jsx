@@ -79,7 +79,7 @@ export function ProjectDialog({ project, onClose }) {
       <section className="case-results"><h3>{t.results}</h3><div className="result-grid">{project.results.map(result => <div key={result.value}><strong>{result.value}</strong><span>{text(result.label)}</span></div>)}</div>{project.evidence && <p className="evidence-note">{text(project.evidence)}</p>}</section>
       {project.limits && <section className="case-limit"><h3>{t.limits}</h3><p>{text(project.limits)}</p></section>}
       {project.credit && <section className="case-credit"><h3>{t.credit}</h3><p>{text(project.credit)}</p></section>}
-      <div className="dialog-links"><span className="eyebrow">{t.links}</span><div className="dialog-link-row">{project.links.map(link => <a className="button button-secondary" key={link.url} href={link.url} target="_blank" rel="noopener noreferrer"><Icon name={link.kind === 'github' ? 'github' : 'diagonal'} size={18}/>{text(link.label)}<Icon name="diagonal" size={16}/></a>)}</div></div>
+      {project.links.length > 0 && <div className="dialog-links"><span className="eyebrow">{t.links}</span><div className="dialog-link-row">{project.links.map(link => <a className="button button-secondary" key={link.url} href={link.url} target="_blank" rel="noopener noreferrer"><Icon name={link.kind === 'github' ? 'github' : 'diagonal'} size={18}/>{text(link.label)}<Icon name="diagonal" size={16}/></a>)}</div></div>}
     </div>
   </dialog>;
 }
