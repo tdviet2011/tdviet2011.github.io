@@ -1,11 +1,14 @@
 import { usePortfolio } from '../hooks/usePortfolio';
 import { Icon } from './Icon';
 import { ProjectArtwork } from './Artwork';
+import { BlockDiagram } from './BlockDiagram';
+import { diagrams } from '../data/diagrams';
 
-export function ProjectCard({ project, onOpen, wide = false }) {
-  const { t, text } = usePortfolio();
-  return <article className={`project-card ${wide ? 'project-wide' : ''}`}>
-    <div className="project-visual"><ProjectArtwork kind={project.art}/><span className="visual-index">{project.number} / {project.category}</span><span className="visual-caption">{t.artworkCaption}</span></div>
+export function ProjectCard({ project, onOpen, wide = false, flip = false }) {
+  const { t, text, lang } = usePortfolio();
+  const spec = project.diagram && diagrams[project.diagram];
+  return <article className={`project-card ${wide ? 'project-wide' : ''} ${flip ? 'project-flip' : ''}`}>
+    <div className={`project-visual ${spec ? 'has-diagram' : ''}`}>{spec ? <div className="card-diagram"><BlockDiagram spec={spec} lang={lang}/></div> : <ProjectArtwork kind={project.art}/>}<span className="visual-index">{project.number} / {project.category}</span><span className="visual-caption">{spec ? t.diagramCaption : t.artworkCaption}</span></div>
     <div className="project-copy">
       <p className="eyebrow">{text(project.eyebrow)}</p>
       <h3>{text(project.title)}</h3>
