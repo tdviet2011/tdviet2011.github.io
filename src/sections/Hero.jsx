@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { usePortfolio, useReducedMotion } from '../hooks/usePortfolio';
 import { profile } from '../data/profile';
-import { ChipArtwork } from '../components/Artwork';
+import { HeroChip } from '../components/HeroChip';
 import { Icon } from '../components/Icon';
 
 const words = ['Verilog & SystemVerilog', 'RTL verification', 'FPGA integration'];
@@ -43,7 +43,7 @@ export function Hero({ onOpen }) {
         <div className="hero-actions"><a className="button button-primary" href={`mailto:${profile.email}`}><Icon name="mail" size={18}/>{t.emailMe}<Icon name="diagonal" size={17}/></a><a className="button button-secondary" href={`${import.meta.env.BASE_URL}${profile.cv}`} download><Icon name="download" size={18}/>{t.downloadCv}</a><a className="button button-quiet" href="#projects">{t.explore}<Icon name="arrow" size={18}/></a></div>
         <TypeLine/>
       </div>
-      <div className="hero-visual"><div className="figure-top"><span>FIG. 01</span><span>RTL / DESIGN EXPLORATION</span></div><ChipArtwork/><div className="figure-bottom"><span className="signal-dot"/>{t.chipCaption}<span className="figure-cross" aria-hidden="true">+</span></div><div className="hero-coordinate" aria-hidden="true">X: 128 · Y: 256</div></div>
+      <div className="hero-visual"><HeroChip/></div>
     </div>
     <div className="hero-project-strip">{[['aes-256','AES-256','01'],['floating-point-alu','FLOAT32','02'],['tiny-mnist','INT8 / MNIST','03'],['qc-ldpc','QC-LDPC','04']].map(([id,label,number],i) => <button key={id} onClick={() => onOpen(id)}><span className="strip-number">{number}</span><span><strong>{label}</strong><small>{t.rail[i]}</small></span><Icon name="diagonal" size={18}/></button>)}</div>
     <div className="hero-bottomline"><span>{t.heroEyebrow}</span><a href="#about" aria-label={t.nav[0]}><span>{t.scrollExplore}</span><span aria-hidden="true">↓</span></a></div>
