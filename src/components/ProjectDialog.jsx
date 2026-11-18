@@ -3,6 +3,7 @@ import { usePortfolio } from '../hooks/usePortfolio';
 import { diagrams } from '../data/diagrams';
 import { BlockDiagram } from './BlockDiagram';
 import { Icon } from './Icon';
+import { ProjectLab } from '../lab/ProjectLab';
 
 const asset = (path) => `${import.meta.env.BASE_URL}${path}`;
 
@@ -45,6 +46,8 @@ export function ProjectDialog({ project, onClose }) {
         <div className="figure-scroll"><BlockDiagram spec={spec} lang={lang}/></div>
         <figcaption><span>{t.diagramLabel}</span><span className="scroll-hint">{t.scrollHint}</span></figcaption>
       </figure>}
+
+      <ProjectLab key={project.id} id={project.id} lang={lang}/>
 
       <div className="dialog-sections">
         <Section n={++n} title={t.overview}><p>{text(project.problem)}</p></Section>
