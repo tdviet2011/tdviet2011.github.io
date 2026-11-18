@@ -47,8 +47,9 @@ const flows = [
   { d: 'M98 132H110V140H122', c: 'pk-ctl', dur: 2 * T, b: 1.6 },
   { d: 'M140 176V152', c: 'pk-in', dur: 2 * T, b: 0.6 },
 ];
-const stages = ['IF', 'ID', 'EX', 'WB'];
-const states = [['IDLE', 54, 118], ['LOAD', 86, 118], ['RUN', 86, 150], ['DONE', 54, 150]];
+const stages = ['SB', 'SR', 'MC', 'AK'];
+const states = [['LOAD', 54, 118], ['VNP', 86, 118], ['CNP', 86, 150], ['OUT', 54, 150]];
+const focusNames = { 'aes-256': 'AES-256 CORE · 353/353', 'floating-point-alu': 'FP32 ALU · 410,704 VECTORS', 'tiny-mnist': 'INT8 MLP · 200/200 BIT-EXACT', 'qc-ldpc': 'QC-LDPC · −18.8% CARRY4' };
 const hex = ['3F2A', 'C0DE', '0A1B', 'BEEF', '7E10', '42C9', 'D00D', '19F3'];
 
 function Wave() {
@@ -73,6 +74,8 @@ export function HeroChip() {
   const [paused, setPaused] = useState(reduced);
   const [cycle, setCycle] = useState(4096);
   const svg = useRef(null);
+  const [focus, setFocus] = useState(null);
+  useEffect(() => { const on = e => setFocus(e.detail || null); window.addEventListener('chip-focus', on); return () => window.removeEventListener('chip-focus', on); }, []);
   useEffect(() => { setPaused(reduced); }, [reduced]);
   useEffect(() => {
     const s = svg.current; if (!s) return;
@@ -83,9 +86,9 @@ export function HeroChip() {
   }, [paused]);
   const vi = lang === 'vi';
   const pinCls = (p) => p.side === 1 ? 'pin pin-in' : p.side === 2 ? 'pin pin-out' : p.i % 4 === 0 ? 'pin pin-pwr' : 'pin';
-  return <div className={`chip-lab ${paused ? 'paused' : ''}`} style={{ '--T': `${T}s` }}>
+  return <div className={`chip-lab ${paused ? 'paused' : ''} ${focus ? 'has-focus' : ''}`} data-focus={focus || undefined} style={{ '--T': `${T}s` }}>
     <div className="chip-lab-top"><span className="chip-dots"><i/><i/><i/></span><span>SILICON / DATA FLOW</span><span className="chip-live"><i/>{paused ? 'HALT' : 'LIVE'}</span></div>
-    <svg ref={svg} className="chip-scene" viewBox="0 0 780 600" style={{ background: '#0a0a16' }} role="img" aria-label={vi ? 'Con chip RTL với xung clock, luồng dữ liệu qua SRAM, pipeline 4 tầng và FSM điều khiển' : 'An RTL chip with a clock tree, data moving through SRAM, a 4-stage pipeline and an FSM controller'}>
+    <svg ref={svg} className="chip-scene" viewBox="0 0 780 600" style={{ background: '#0a0a16' }} role="img" aria-label={vi ? 'Con chip RTL với xung clock, luồng dữ liệu qua bốn khối: AES-256, FP32 ALU, MAC int8 cho MNIST và bộ giải mã QC-LDPC' : 'An RTL chip with a clock tree, four blocks: AES-256, FP32 ALU, int8 MNIST MAC array and a QC-LDPC decoder'}>
       <defs>
         <filter id="hc-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         <radialGradient id="hc-aura"><stop stopColor="#8961dc" stopOpacity=".28"/><stop offset="1" stopColor="#8961dc" stopOpacity="0"/></radialGradient>
@@ -121,23 +124,31 @@ export function HeroChip() {
           <rect x="132" y="162" width="16" height="10" className="pll"/><text x="140" y="169" className="die-text" textAnchor="middle">PLL</text>
           {/* buses */}
           <path className="bus" d="M30 66H44M100 66H112V52H170V66M100 80H112V92H160V108H170M30 130H40M98 132H110V140H122"/>
-          {/* SRAM macro */}
-          <rect x="40" y="40" width="62" height="62" className="block"/>
-          {sram.map((c, i) => <rect key={i} x={c.x} y={c.y} width="5.4" height="5.4" className="bitcell" style={{ animationDelay: `${-c.d}s` }}/>)}
-          <text x="71" y="38" className="die-text" textAnchor="middle">SRAM 8×8</text>
-          {/* 4-stage pipeline */}
-          <rect x="112" y="40" width="58" height="22" className="block"/>
-          {stages.map((s, i) => <g key={s}><rect x={114 + i * 14} y="44" width="12" height="14" className="stage" style={{ animationDelay: `${i * T}s` }}/><text x={120 + i * 14} y="53" className="die-text" textAnchor="middle">{s}</text></g>)}
-          <text x="141" y="38" className="die-text" textAnchor="middle">PIPELINE</text>
-          {/* register file */}
-          <rect x="112" y="70" width="58" height="26" className="block"/>
-          {Array.from({ length: 8 }, (_, i) => <rect key={i} x={115 + (i % 4) * 13.5} y={73 + Math.floor(i / 4) * 11} width="11" height="9" className="reg" style={{ animationDelay: `${((i * 3) % 8) * T / 2}s` }}/>)}
-          <text x="141" y="102" className="die-text" textAnchor="middle">REGFILE</text>
-          {/* FSM controller */}
-          <rect x="40" y="108" width="62" height="56" className="block"/>
-          <path className="fsm-edge" d="M60 118H80M86 124V144M80 150H60M54 144V124"/>
-          {states.map(([n, x, y], i) => <g key={n}><circle cx={x} cy={y} r="6.5" className="fsm-state" style={{ animationDelay: `${i * T}s` }}/><text x={x} y={y + 1.6} className="die-text tiny" textAnchor="middle">{n}</text></g>)}
-          <text x="71" y="106" className="die-text" textAnchor="middle">FSM CTRL</text>
+          {/* MNIST: int8 MAC array + weight ROM */}
+          <g className="blk blk-tiny-mnist" data-block="tiny-mnist">
+            <rect x="40" y="40" width="62" height="62" className="block"/><rect x="38" y="38" width="66" height="66" className="blk-halo"/>
+            {sram.map((c, i) => <rect key={i} x={c.x} y={c.y} width="5.4" height="5.4" className="bitcell" style={{ animationDelay: `${-c.d}s` }}/>)}
+            <text x="71" y="36" className="die-text" textAnchor="middle">INT8 MAC · MNIST</text>
+          </g>
+          {/* AES-256 round pipeline */}
+          <g className="blk blk-aes-256" data-block="aes-256">
+            <rect x="112" y="40" width="58" height="22" className="block"/><rect x="110" y="38" width="62" height="26" className="blk-halo"/>
+            {stages.map((s, i) => <g key={s}><rect x={114 + i * 14} y="44" width="12" height="14" className="stage" style={{ animationDelay: `${i * T}s` }}/><text x={120 + i * 14} y="53" className="die-text" textAnchor="middle">{s}</text></g>)}
+            <text x="141" y="36" className="die-text" textAnchor="middle">AES-256 CORE</text>
+          </g>
+          {/* FP32 ALU */}
+          <g className="blk blk-floating-point-alu" data-block="floating-point-alu">
+            <rect x="112" y="70" width="58" height="26" className="block"/><rect x="110" y="68" width="62" height="30" className="blk-halo"/>
+            {Array.from({ length: 8 }, (_, i) => <rect key={i} x={115 + (i % 4) * 13.5} y={73 + Math.floor(i / 4) * 11} width="11" height="9" className="reg" style={{ animationDelay: `${((i * 3) % 8) * T / 2}s` }}/>)}
+            <text x="141" y="102" className="die-text" textAnchor="middle">FP32 ALU</text>
+          </g>
+          {/* QC-LDPC layered decoder */}
+          <g className="blk blk-qc-ldpc" data-block="qc-ldpc">
+            <rect x="40" y="108" width="62" height="56" className="block"/><rect x="38" y="106" width="66" height="60" className="blk-halo"/>
+            <path className="fsm-edge" d="M60 118H80M86 124V144M80 150H60M54 144V124"/>
+            {states.map(([n, x, y], i) => <g key={n}><circle cx={x} cy={y} r="6.5" className="fsm-state" style={{ animationDelay: `${i * T}s` }}/><text x={x} y={y + 1.6} className="die-text tiny" textAnchor="middle">{n}</text></g>)}
+            <text x="71" y="171" className="die-text" textAnchor="middle">QC-LDPC DEC</text>
+          </g>
           <rect x="30" y="30" width="140" height="140" fill="url(#hc-core)" className="core-aura"/>
           {/* packets */}
           {flows.map((f, i) => <rect key={i} x="-2.5" y="-2.5" width="5" height="5" className={`pk ${f.c}`}><animateMotion dur={`${f.dur}s`} repeatCount="indefinite" begin={`${-f.b}s`} path={f.d}/></rect>)}
@@ -165,7 +176,7 @@ export function HeroChip() {
     </div>
     <div className="chip-lab-bottom">
       <strong>CYCLE {cycle.toString(16).toUpperCase().padStart(6, '0')}</strong>
-      <span>{vi ? 'IN → SRAM → PIPELINE → OUT' : 'IN → SRAM → PIPELINE → OUT'}</span>
+      <span className={focus ? 'focus-name' : ''}>{focus ? `▸ ${focusNames[focus]}` : 'IN → MAC → AES → ALU → OUT'}</span>
       <button type="button" onClick={() => setPaused(p => !p)} aria-pressed={paused} aria-label={paused ? (vi ? 'Tiếp tục hoạt ảnh chip' : 'Resume chip animation') : (vi ? 'Tạm dừng hoạt ảnh chip' : 'Pause chip animation')}>{paused ? (vi ? '▶ Tiếp tục' : '▶ Resume') : (vi ? 'Ⅱ Tạm dừng' : 'Ⅱ Pause')}</button>
     </div>
   </div>;

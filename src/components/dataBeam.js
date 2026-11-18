@@ -15,8 +15,10 @@ function getLayer() {
   return layer;
 }
 
-function source() {
-  const die = document.querySelector('.chip-scene .core-aura') || document.querySelector('.chip-scene');
+export const chipFocus = (id) => window.dispatchEvent(new CustomEvent('chip-focus', { detail: id }));
+
+function source(from) {
+  const die = (from && document.querySelector(`.chip-scene [data-block="${from}"] .block`)) || document.querySelector('.chip-scene .core-aura') || document.querySelector('.chip-scene');
   const vw = innerWidth;
   if (!die) return { x: vw / 2, y: -8 };
   const r = die.getBoundingClientRect();
@@ -58,12 +60,12 @@ function energize(svg, target, color) {
 
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export function fireBeam(target, action, { delay = 980 } = {}) {
+export function fireBeam(target, action, { delay = 980, from = null } = {}) {
   if (!target || reduced() || busy) { action?.(); return; }
   busy = true;
   const svg = getLayer();
   const r = target.getBoundingClientRect();
-  const s = source();
+  const s = source(from);
   const d = route(s, r);
   const color = COLORS[Math.floor(Math.random() * COLORS.length)];
   const g = document.createElementNS(NS, 'g');

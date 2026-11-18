@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { usePortfolio, useReducedMotion } from '../hooks/usePortfolio';
 import { profile } from '../data/profile';
 import { HeroChip } from '../components/HeroChip';
-import { fireBeam } from '../components/dataBeam';
+import { fireBeam, chipFocus } from '../components/dataBeam';
 import { Icon } from '../components/Icon';
 
 const words = ['Verilog & SystemVerilog', 'RTL verification', 'FPGA integration'];
@@ -46,7 +46,7 @@ export function Hero({ onOpen }) {
       </div>
       <div className="hero-visual"><HeroChip/></div>
     </div>
-    <div className="hero-project-strip">{[['aes-256','AES-256','01'],['floating-point-alu','FLOAT32','02'],['tiny-mnist','INT8 / MNIST','03'],['qc-ldpc','QC-LDPC','04']].map(([id,label,number],i) => <button key={id} onClick={e => fireBeam(e.currentTarget, () => onOpen(id))}><span className="strip-number">{number}</span><span><strong>{label}</strong><small>{t.rail[i]}</small></span><Icon name="diagonal" size={18}/></button>)}</div>
+    <div className="hero-project-strip">{[['aes-256','AES-256','01'],['floating-point-alu','FLOAT32','02'],['tiny-mnist','INT8 / MNIST','03'],['qc-ldpc','QC-LDPC','04']].map(([id,label,number],i) => <button key={id} onMouseEnter={() => chipFocus(id)} onMouseLeave={() => chipFocus(null)} onFocus={() => chipFocus(id)} onBlur={() => chipFocus(null)} onClick={e => { chipFocus(id); fireBeam(e.currentTarget, () => onOpen(id), { from: id }); }}><span className="strip-number">{number}</span><span><strong>{label}</strong><small>{t.rail[i]}</small></span><Icon name="diagonal" size={18}/></button>)}</div>
     <div className="hero-bottomline"><span>{t.heroEyebrow}</span><a href="#about" aria-label={t.nav[0]}><span>{t.scrollExplore}</span><span aria-hidden="true">↓</span></a></div>
   </section>;
 }

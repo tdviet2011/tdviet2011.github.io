@@ -859,3 +859,16 @@ img { max-width: 100%; }
   background: linear-gradient(100deg, transparent 35%, color-mix(in srgb, var(--scan-color, #4fe3ff) 22%, transparent) 48%, color-mix(in srgb, #ffffff 18%, transparent) 50%, color-mix(in srgb, var(--scan-color, #4fe3ff) 22%, transparent) 52%, transparent 65%) no-repeat;
   background-size: 300% 100%; background-position: 100% 0; animation: data-scan .9s ease-out forwards; }
 @keyframes data-scan { from { background-position: 100% 0; opacity: 1; } 85% { opacity: 1; } to { background-position: 0 0; opacity: 0; } }
+/* chip block focus (hover a project → its block on the chip lights up) */
+.blk { transition: opacity .3s ease; }
+.blk-halo { fill: #4fe3ff14; stroke: #8ef0ff; stroke-width: 2; opacity: 0; transition: opacity .3s ease; filter: url(#hc-glow); }
+.blk .block { transition: fill .3s ease, stroke .3s ease; }
+.chip-lab.has-focus .blk { opacity: .22; }
+.chip-lab[data-focus='aes-256'] .blk-aes-256, .chip-lab[data-focus='floating-point-alu'] .blk-floating-point-alu,
+.chip-lab[data-focus='tiny-mnist'] .blk-tiny-mnist, .chip-lab[data-focus='qc-ldpc'] .blk-qc-ldpc { opacity: 1; }
+.chip-lab[data-focus='aes-256'] .blk-aes-256 .blk-halo, .chip-lab[data-focus='floating-point-alu'] .blk-floating-point-alu .blk-halo,
+.chip-lab[data-focus='tiny-mnist'] .blk-tiny-mnist .blk-halo, .chip-lab[data-focus='qc-ldpc'] .blk-qc-ldpc .blk-halo { opacity: 1; animation: hc-blink calc(var(--T) * 1) ease-in-out infinite; }
+.chip-lab[data-focus='aes-256'] .blk-aes-256 .block, .chip-lab[data-focus='floating-point-alu'] .blk-floating-point-alu .block,
+.chip-lab[data-focus='tiny-mnist'] .blk-tiny-mnist .block, .chip-lab[data-focus='qc-ldpc'] .blk-qc-ldpc .block { fill: #24476a; stroke: #b9f6ff; }
+.chip-lab.has-focus .die-text { transition: fill .3s; }
+.chip-lab-bottom .focus-name { color: #8ef0ff; }

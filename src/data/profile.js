@@ -5,7 +5,7 @@ export const profile = {
   linkedin: 'https://www.linkedin.com/in/%C4%91%E1%BB%A9c-vi%E1%BB%87t-th%C3%A2n-11492a412/',
   school: 'HCM-UTE',
   graduation: '2028',
-  gpa: '3.69',
+  gpa: '3.66',
   cv: 'cv/Than_Duc_Viet_CV.pdf',
   studentId: '24161457',
 };
