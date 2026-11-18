@@ -90,7 +90,7 @@ img { max-width: 100%; }
 .reveal[data-visible='false'] { opacity: 0; transform: translateY(16px); }
 
 /* Navigation */
-.site-header { height: 83px; position: sticky; top: 0; z-index: 30; border-bottom: 1px solid var(--soft-border); background: var(--header-bg); backdrop-filter: blur(18px); }
+.site-header { height: 83px; position: sticky; top: 0; z-index: 30; border-bottom: 1px solid var(--soft-border); background: var(--header-bg); backdrop-filter: blur(10px); }
 .header-inner { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 30px; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font: 600 16px 'Space Grotesk', sans-serif; letter-spacing: -.6px; }
 .brand-icon { color: var(--accent); display: inline-flex; }
@@ -754,12 +754,15 @@ img { max-width: 100%; }
 .chip-lab-bottom strong { font-weight: 400; color: #b6a0fa; font-variant-numeric: tabular-nums; }
 .chip-lab-bottom button { color: #b6a0fa; font: inherit; letter-spacing: 1px; padding: 6px 8px; border-radius: 4px; }
 .chip-lab-bottom button:hover { background: #b6a0fa1a; }
-.chip-scene { display: block; width: 100%; height: auto; }
+.chip-stage { position: relative; background: #0a0a16; }
+.chip-bg { position: absolute; inset: 0; width: 100%; height: 100%; will-change: transform; pointer-events: none; }
+.chip-scene { position: relative; display: block; width: 100%; height: auto; }
+.chip-lab.offscreen * { animation-play-state: paused !important; }
 .chip-labels text { fill: #7f8aa4; font: 400 10px 'JetBrains Mono', monospace; letter-spacing: 2px; }
 .trace { fill: none; stroke: #655879; stroke-width: 1.1; opacity: .6; }
 .trace-current { fill: none; stroke: #bb9bf2; stroke-width: 1.8; stroke-dasharray: 12 140; animation: hc-dash calc(var(--T) * 3) linear infinite; }
 .tc-0 { stroke: #84d9cf; stroke-dasharray: 6 100; } .tc-2 { stroke: #d4baff; stroke-dasharray: 22 180; }
-.trace-packet { fill: #d8c6ff; filter: url(#hc-glow); } .tp-0 { fill: #8cecdf; }
+.trace-packet { fill: #d8c6ff; } .tp-0 { fill: #8cecdf; }
 .chip-float { animation: hc-hover 7s ease-in-out infinite; }
 .pin { fill: #6e5b89; animation: hc-pin var(--T) steps(1) infinite; }
 .pin-in { animation-name: hc-pin-in; } .pin-out { animation-name: hc-pin-out; } .pin-pwr { fill: #8a7a54; animation: none; }
@@ -778,8 +781,8 @@ img { max-width: 100%; }
 .die-text { fill: #a996cf; font: 400 4.6px 'JetBrains Mono', monospace; letter-spacing: .3px; }
 .die-text.tiny { font-size: 3.2px; fill: #e7dcff; }
 .die-text.mark { fill: #6d6290; font-size: 4px; letter-spacing: 1.5px; }
-.pk { filter: url(#hc-glow); } .pk-in { fill: #8cecdf; } .pk-data { fill: #e2d2ff; } .pk-ctl { fill: #f2c27b; }
-.chip-scan { fill: none; stroke: #d5c1ff; stroke-width: 2; stroke-dasharray: 35 420; filter: url(#hc-glow); animation: hc-dash calc(var(--T) * 4) linear infinite; opacity: .8; }
+.pk { stroke: #fff6; stroke-width: 1; } .pk-in { fill: #8cecdf; } .pk-data { fill: #e2d2ff; } .pk-ctl { fill: #f2c27b; }
+.chip-scan { fill: none; stroke: #d5c1ff; stroke-width: 2; stroke-dasharray: 35 420; animation: hc-dash calc(var(--T) * 4) linear infinite; opacity: .8; }
 .chip-analyzer { display: grid; grid-template-columns: 74px 1fr; border-top: 1px solid #252a36; padding: 8px 16px 6px; gap: 8px; }
 .la-names { display: grid; grid-template-rows: repeat(3,1fr); font-size: 7.5px; letter-spacing: .8px; color: #7f8aa4; align-items: center; }
 .la-window { overflow: hidden; height: 58px; position: relative; }
@@ -792,6 +795,12 @@ img { max-width: 100%; }
 .la-wave text { fill: #e2d2ff; font: 400 7px 'JetBrains Mono', monospace; }
 .la-valid { fill: none; stroke: #f2c27b; stroke-width: 1.2; vector-effect: non-scaling-stroke; }
 .chip-lab.paused * { animation-play-state: paused !important; }
+.pin, .pin-in, .pin-out, .pad, .bitcell { animation: none !important; }
+.pin { fill: #8a76b4; } .pin-in { fill: #6fc4b9; } .pin-out { fill: #a993d8; } .pad { fill: #5a4b85; }
+.pin-ph { animation: hc-ph var(--T) steps(1) infinite; } .pad-ph { animation: hc-ph calc(var(--T) * 2) steps(1) infinite; }
+.bit-ph { fill: #b39af0; opacity: 0; animation: hc-bitflash calc(var(--T) * 4) steps(1) infinite; }
+@keyframes hc-ph { 0% { opacity: 1; } 50% { opacity: .5; } }
+@keyframes hc-bitflash { 0% { opacity: 1; } 6% { opacity: .45; } 12% { opacity: 0; } }
 @keyframes hc-dash { to { stroke-dashoffset: -455; } }
 @keyframes hc-hover { 50% { transform: translateY(-6px); } }
 @keyframes hc-blink { 50% { opacity: .2; } }
@@ -812,12 +821,12 @@ img { max-width: 100%; }
 .neon-glow { filter: url(#hc-neon); opacity: .55; }
 .neon-base { fill: none; stroke-width: 4; }
 .neon-line { fill: none; stroke-width: 1.3; opacity: .7; }
-.neon-pulse { fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-dasharray: 7 93; animation: hc-neon 2s linear infinite; filter: url(#hc-glow); }
+.neon-pulse { fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-dasharray: 7 93; animation: hc-neon 2s linear infinite; stroke-width: 3; }
 .neon-pulse.rev { animation-direction: reverse; }
 .neon-end { stroke-width: 1.4; }
-.neon-node { filter: url(#hc-glow); animation: hc-blink var(--T) ease-in-out infinite; }
-.edge-strip { fill: none; stroke: #6ff0ff; stroke-width: 2.2; filter: url(#hc-glow); opacity: .85; animation: hc-blink calc(var(--T) * 2) ease-in-out infinite; }
-.core-aura { mix-blend-mode: screen; animation: hc-blink calc(var(--T) * 2) ease-in-out infinite; }
+.neon-node { animation: hc-blink var(--T) ease-in-out infinite; }
+.edge-strip { fill: none; stroke: #6ff0ff; stroke-width: 2.2; opacity: .85; animation: hc-blink calc(var(--T) * 2) ease-in-out infinite; }
+.core-aura { animation: hc-blink calc(var(--T) * 2) ease-in-out infinite; }
 .hud text { fill: #8f97b3; font: 400 10px 'JetBrains Mono', monospace; letter-spacing: 2px; }
 .hud .hud-label { fill: #c9cff0; font-size: 11px; }
 .hud .hud-label.sm { font-size: 8px; fill: #8f97b3; }
@@ -991,7 +1000,7 @@ html.booting body { overflow: hidden; }
 /* ---- Layout cursor ---- */
 .layout-cursor { position: fixed; inset: 0; pointer-events: none; z-index: 55; }
 .layout-cursor.lc-out .lc-h, .layout-cursor.lc-out .lc-v, .layout-cursor.lc-dialog { display: none; }
-.lc-h, .lc-v { position: absolute; left: 0; top: 0; background: color-mix(in srgb, #8ef0ff 14%, transparent); }
+.lc-h, .lc-v { position: absolute; left: 0; top: 0; will-change: transform; background: color-mix(in srgb, #8ef0ff 14%, transparent); }
 .lc-h { width: 100%; height: 1px; } .lc-v { height: 100%; width: 1px; }
 .lc-box { position: fixed; display: none; outline: 1px dashed #e15bff55; outline-offset: 6px; }
 .lc-box i { position: absolute; width: 14px; height: 14px; border: 2px solid #e15bff; }

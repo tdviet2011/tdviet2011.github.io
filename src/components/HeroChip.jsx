@@ -72,53 +72,75 @@ export function HeroChip() {
   const { lang } = usePortfolio();
   const reduced = useReducedMotion();
   const [paused, setPaused] = useState(reduced);
-  const [cycle, setCycle] = useState(4096);
+  const cycleEl = useRef(null);
+  const lab = useRef(null);
   const svg = useRef(null);
+  const [hidden, setHidden] = useState(false);
+  useEffect(() => {
+    // stop every animation while the chip is off screen or the tab is in the background
+    const el = lab.current; if (!el) return;
+    let off = false;
+    const sync = () => setHidden(off || document.hidden);
+    const io = new IntersectionObserver(([e]) => { off = !e.isIntersecting; sync(); });
+    io.observe(el); document.addEventListener('visibilitychange', sync);
+    return () => { io.disconnect(); document.removeEventListener('visibilitychange', sync); };
+  }, []);
   const [focus, setFocus] = useState(null);
   useEffect(() => { const on = e => setFocus(e.detail || null); window.addEventListener('chip-focus', on); return () => window.removeEventListener('chip-focus', on); }, []);
   useEffect(() => { setPaused(reduced); }, [reduced]);
+  const halted = paused || hidden;
   useEffect(() => {
     const s = svg.current; if (!s) return;
-    if (paused) s.pauseAnimations?.(); else s.unpauseAnimations?.();
-    if (paused) return;
-    const id = setInterval(() => setCycle(c => c + 1), T * 1000);
+    if (halted) s.pauseAnimations?.(); else s.unpauseAnimations?.();
+    if (halted) return;
+    let c = Number(cycleEl.current?.dataset.c || 4096);
+    const id = setInterval(() => { c += 1; if (cycleEl.current) { cycleEl.current.dataset.c = c; cycleEl.current.textContent = `CYCLE ${c.toString(16).toUpperCase().padStart(6, '0')}`; } }, T * 1000);
     return () => clearInterval(id);
-  }, [paused]);
+  }, [halted]);
   const vi = lang === 'vi';
   const pinCls = (p) => p.side === 1 ? 'pin pin-in' : p.side === 2 ? 'pin pin-out' : p.i % 4 === 0 ? 'pin pin-pwr' : 'pin';
-  return <div className={`chip-lab ${paused ? 'paused' : ''} ${focus ? 'has-focus' : ''}`} data-focus={focus || undefined} style={{ '--T': `${T}s` }}>
+  return <div ref={lab} className={`chip-lab ${paused ? 'paused' : ''} ${hidden ? 'offscreen' : ''} ${focus ? 'has-focus' : ''}`} data-focus={focus || undefined} style={{ '--T': `${T}s` }}>
     <div className="chip-lab-top"><span className="chip-dots"><i/><i/><i/></span><span>SILICON / DATA FLOW</span><span className="chip-live"><i/>{paused ? 'HALT' : 'LIVE'}</span></div>
-    <svg ref={svg} className="chip-scene" viewBox="0 0 780 600" style={{ background: '#0a0a16' }} role="img" aria-label={vi ? 'Con chip RTL với xung clock, luồng dữ liệu qua bốn khối: AES-256, FP32 ALU, MAC int8 cho MNIST và bộ giải mã QC-LDPC' : 'An RTL chip with a clock tree, four blocks: AES-256, FP32 ALU, int8 MNIST MAC array and a QC-LDPC decoder'}>
+    <div className="chip-stage">
+    <svg className="chip-bg" viewBox="0 0 780 600" aria-hidden="true">
       <defs>
-        <filter id="hc-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         <radialGradient id="hc-aura"><stop stopColor="#8961dc" stopOpacity=".28"/><stop offset="1" stopColor="#8961dc" stopOpacity="0"/></radialGradient>
-        <linearGradient id="hc-top" x2="1" y2="1"><stop stopColor="#2c2640"/><stop offset="1" stopColor="#171a28"/></linearGradient>
-        <radialGradient id="hc-core"><stop stopColor="#8ef0ff" stopOpacity=".35"/><stop offset=".6" stopColor="#9b6bff" stopOpacity=".12"/><stop offset="1" stopColor="#9b6bff" stopOpacity="0"/></radialGradient>
         <filter id="hc-neon" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="4"/></filter>
-        <linearGradient id="hc-l"><stop stopColor="#5d4290"/><stop offset="1" stopColor="#3a2d5c"/></linearGradient>
-        <linearGradient id="hc-r"><stop stopColor="#3a2d5c"/><stop offset="1" stopColor="#2a2144"/></linearGradient>
       </defs>
       <ellipse cx="390" cy="330" rx="300" ry="190" fill="url(#hc-aura)"/>
       <g className="iso-grid">{Array.from({ length: 26 }, (_, i) => <path key={i} d={`M${-420 + i * 48} 0l1040 600M${-420 + i * 48} 600l1040 -600`}/>)}</g>
-      <g className="neon-glow">{traces.map((t, i) => <path key={i} d={t.d} stroke={t.c} className="neon-base"/>)}</g>
+      <g className="neon-glow">{traces.map((t, i) => <path key={i} d={t.d} stroke={t.c} className="neon-base"/>)}<path d="M390 40V150" stroke="#e15bff" className="neon-base"/><path d="M390 440V590" stroke="#4fe3ff" className="neon-base"/></g>
       <g className="neon">
-        {traces.map((t, i) => <g key={i}><path d={t.d} stroke={t.c} className="neon-line"/><path d={t.d} stroke={t.c} pathLength="100" className="neon-pulse" style={{ animationDuration: `${t.dur}s`, animationDelay: `${t.delay}s` }}/>{t.end && <circle cx={t.end[0]} cy={t.end[1]} r="3.2" fill="none" stroke={t.c} className="neon-end"/>}</g>)}
-        <path d="M390 40V150" stroke="#e15bff" className="neon-line"/><path d="M390 40V150" stroke="#e15bff" pathLength="100" className="neon-pulse rev" style={{ animationDuration: '1.8s' }}/><circle cx="390" cy="40" r="4" fill="#f4d8ff" className="neon-node"/>
-        <path d="M390 440V590" stroke="#4fe3ff" className="neon-line"/><path d="M390 440V590" stroke="#4fe3ff" pathLength="100" className="neon-pulse" style={{ animationDuration: '2.2s' }}/>
+        {traces.map((t, i) => <g key={i}><path d={t.d} stroke={t.c} className="neon-line"/>{t.end && <circle cx={t.end[0]} cy={t.end[1]} r="3.2" fill="none" stroke={t.c} className="neon-end"/>}</g>)}
+        <path d="M390 40V150" stroke="#e15bff" className="neon-line"/><path d="M390 440V590" stroke="#4fe3ff" className="neon-line"/>
       </g>
       <ellipse cx="390" cy="452" rx="220" ry="46" fill="#07080e" opacity=".55"/>
+    </svg>
+    <svg ref={svg} className="chip-scene" viewBox="0 0 780 600" role="img" aria-label={vi ? 'Con chip RTL với xung clock, luồng dữ liệu qua bốn khối: AES-256, FP32 ALU, MAC int8 cho MNIST và bộ giải mã QC-LDPC' : 'An RTL chip with a clock tree, four blocks: AES-256, FP32 ALU, int8 MNIST MAC array and a QC-LDPC decoder'}>
+      <defs>
+        <filter id="hc-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <linearGradient id="hc-top" x2="1" y2="1"><stop stopColor="#2c2640"/><stop offset="1" stopColor="#171a28"/></linearGradient>
+        <radialGradient id="hc-core"><stop stopColor="#8ef0ff" stopOpacity=".35"/><stop offset=".6" stopColor="#9b6bff" stopOpacity=".12"/><stop offset="1" stopColor="#9b6bff" stopOpacity="0"/></radialGradient>
+        <linearGradient id="hc-l"><stop stopColor="#5d4290"/><stop offset="1" stopColor="#3a2d5c"/></linearGradient>
+        <linearGradient id="hc-r"><stop stopColor="#3a2d5c"/><stop offset="1" stopColor="#2a2144"/></linearGradient>
+      </defs>
+      <g className="neon">
+        {traces.map((t, i) => <path key={i} d={t.d} stroke={t.c} pathLength="100" className="neon-pulse" style={{ animationDuration: `${t.dur}s`, animationDelay: `${t.delay}s` }}/>)}
+        <path d="M390 40V150" stroke="#e15bff" pathLength="100" className="neon-pulse rev" style={{ animationDuration: '1.8s' }}/><circle cx="390" cy="40" r="4" fill="#f4d8ff" className="neon-node"/>
+        <path d="M390 440V590" stroke="#4fe3ff" pathLength="100" className="neon-pulse" style={{ animationDuration: '2.2s' }}/>
+      </g>
       <g className="chip-float">
         {/* package sides */}
         <path d={`${P([[0, 200], [200, 200]])} l0 30 L${iso(0, 200)[0]} ${iso(0, 200)[1] + 30}Z`} fill="url(#hc-l)" stroke="#8d6fd0" strokeWidth=".8"/>
         <path d={`${P([[200, 200], [200, 0]])} l0 30 L${iso(200, 200)[0]} ${iso(200, 200)[1] + 30}Z`} fill="url(#hc-r)" stroke="#6f58a6" strokeWidth=".8"/>
         <g transform="matrix(1.04 .6 -1.04 .6 390 176)">
-          {pins.map(p => <rect key={p.k} x={p.x} y={p.y} width={p.w} height={p.h} className={pinCls(p)} style={{ animationDelay: `${(p.i % 4) * T / 4}s` }}/>)}
+          {[0, 1, 2, 3].map(ph => <g key={ph} className="pin-ph" style={{ animationDelay: `${ph * T / 4}s` }}>{pins.filter(p => p.i % 4 === ph).map(p => <rect key={p.k} x={p.x} y={p.y} width={p.w} height={p.h} className={pinCls(p)}/>)}</g>)}
           <rect width="200" height="200" fill="url(#hc-top)" stroke="#c9b2ff" strokeWidth="1.4"/>
           <rect x="8" y="8" width="184" height="184" fill="none" stroke="#6b5a8e" strokeWidth=".6"/>
           {/* die */}
           <rect x="20" y="20" width="160" height="160" className="die" rx="2"/>
           <rect x="20" y="20" width="160" height="160" className="die-ring" fill="none" rx="2"/>
-          {pads.map(([x, y, i]) => <rect key={`${x}-${y}`} x={x} y={y} width="6" height="6" className="pad" style={{ animationDelay: `${(i % 6) * T / 6}s` }}/>)}
+          {[0, 1, 2, 3, 4, 5].map(ph => <g key={ph} className="pad-ph" style={{ animationDelay: `${ph * T / 6}s` }}>{pads.filter(([, , i]) => i % 6 === ph).map(([x, y]) => <rect key={`${x}-${y}`} x={x} y={y} width="6" height="6" className="pad"/>)}</g>)}
           {/* clock H-tree */}
           <path className="clk-tree" d="M140 100V140M120 120H160M120 112V128M160 112V128M112 112H128M112 128H128M152 112H168M152 128H168M140 140V170"/>
           <rect x="132" y="162" width="16" height="10" className="pll"/><text x="140" y="169" className="die-text" textAnchor="middle">PLL</text>
@@ -127,7 +149,8 @@ export function HeroChip() {
           {/* MNIST: int8 MAC array + weight ROM */}
           <g className="blk blk-tiny-mnist" data-block="tiny-mnist">
             <rect x="40" y="40" width="62" height="62" className="block"/><rect x="38" y="38" width="66" height="66" className="blk-halo"/>
-            {sram.map((c, i) => <rect key={i} x={c.x} y={c.y} width="5.4" height="5.4" className="bitcell" style={{ animationDelay: `${-c.d}s` }}/>)}
+            {sram.map((c, i) => <rect key={i} x={c.x} y={c.y} width="5.4" height="5.4" className="bitcell"/>)}
+            {Array.from({ length: 8 }, (_, ph) => <g key={ph} className="bit-ph" style={{ animationDelay: `${-ph * T / 2}s` }}>{sram.filter(c => Math.floor(c.d / (T / 2)) % 8 === ph).map((c, i) => <rect key={i} x={c.x} y={c.y} width="5.4" height="5.4"/>)}</g>)}
             <text x="71" y="36" className="die-text" textAnchor="middle">INT8 MAC · MNIST</text>
           </g>
           {/* AES-256 round pipeline */}
@@ -170,12 +193,13 @@ export function HeroChip() {
         <text x="740" y="586" textAnchor="end" className="hud-status">STATUS: {paused ? 'HALT' : 'ACTIVE'}</text>
       </g>
     </svg>
+    </div>
     <div className="chip-analyzer">
       <div className="la-names"><span>CLK</span><span>DATA[15:0]</span><span>VALID</span></div>
       <div className="la-window"><Wave/></div>
     </div>
     <div className="chip-lab-bottom">
-      <strong>CYCLE {cycle.toString(16).toUpperCase().padStart(6, '0')}</strong>
+      <strong ref={cycleEl} data-c="4096">CYCLE 001000</strong>
       <span className={focus ? 'focus-name' : ''}>{focus ? `▸ ${focusNames[focus]}` : 'IN → MAC → AES → ALU → OUT'}</span>
       <button type="button" onClick={() => setPaused(p => !p)} aria-pressed={paused} aria-label={paused ? (vi ? 'Tiếp tục hoạt ảnh chip' : 'Resume chip animation') : (vi ? 'Tạm dừng hoạt ảnh chip' : 'Pause chip animation')}>{paused ? (vi ? '▶ Tiếp tục' : '▶ Resume') : (vi ? 'Ⅱ Tạm dừng' : 'Ⅱ Pause')}</button>
     </div>
