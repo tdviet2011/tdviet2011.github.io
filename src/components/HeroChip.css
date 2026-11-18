@@ -24,3 +24,5 @@
 @keyframes hc-premium-hover { 50% { transform: translateY(-4px); } }
 @keyframes hc-premium-edge { to { stroke-dashoffset: -575; } }
 @media (prefers-reduced-motion: reduce) { .chip-premium .chip-float, .chip-premium .hc-lid-edge { animation: none !important; } }
+.side-chip .sc-lead { fill: none; stroke: url(#sc-metal); stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+.side-chip.far, .passive.far { filter: blur(1.4px); opacity: .7; }

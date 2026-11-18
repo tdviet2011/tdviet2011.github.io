@@ -5,6 +5,7 @@ import { ProjectArtwork } from './Artwork';
 import { BlockDiagram } from './BlockDiagram';
 import { diagrams } from '../data/diagrams';
 import { hasLab, openLabTab } from '../lab/ProjectLab';
+import { MiniSchematic } from './MiniSchematic';
 
 export function ProjectCard({ project, onOpen, wide = false, flip = false }) {
   const { t, text, lang } = usePortfolio();
@@ -12,6 +13,7 @@ export function ProjectCard({ project, onOpen, wide = false, flip = false }) {
   return <article data-project={project.id} className={`project-card ${wide ? 'project-wide' : ''} ${flip ? 'project-flip' : ''}`} onMouseEnter={() => chipFocus(project.id)} onMouseLeave={() => chipFocus(null)} onClick={e => { if (e.target.closest('a')) return; fireBeam(e.currentTarget, () => onOpen(project.id), { from: project.id }); }}>
     <div className={`project-visual ${spec ? 'has-diagram' : ''}`}>{spec ? <div className="card-diagram"><BlockDiagram spec={spec} lang={lang}/></div> : <ProjectArtwork kind={project.art}/>}<span className="visual-index">{project.number} / {project.category}</span><span className="visual-caption">{spec ? t.diagramCaption : t.artworkCaption}</span></div>
     <div className="project-copy">
+      <MiniSchematic id={project.id}/>
       <p className="eyebrow">{text(project.eyebrow)}</p>
       <h3>{text(project.title)}</h3>
       {project.proof && <p className="proof-pill"><Icon name="tick" size={15}/>{text(project.proof)}</p>}

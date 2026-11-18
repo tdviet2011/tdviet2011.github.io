@@ -38,6 +38,56 @@ const traces = edges.flatMap((e, ei) => [1, 3, 5, 7, 9, 11, 13].map((idx, k) => 
   const d = `M${sx.toFixed(1)} ${sy.toFixed(1)}L${bx.toFixed(1)} ${by.toFixed(1)}H${ex}`;
   return { d, c: NEON[(k + ei) % 4], end: short ? [ex, by] : null, dur: 1.6 + ((k * 7 + ei * 5) % 9) * 0.35, delay: -((k * 13 + ei * 7) % 17) * 0.29 };
 }));
+
+// Board around the main chip: chunky ICs with gull-wing leads and SMD passives, drawn once
+// in the static background layer. Far parts are blurred a little for depth.
+const ipt = (cx, cy, x, y, z = 0) => [cx + 1.04 * x - 1.04 * y, cy + 0.6 * x + 0.6 * y - z];
+function box(cx, cy, w, d, t, top, left, right, extra = '') {
+  const P = (x, y, z) => ipt(cx, cy, x, y, z).map(v => v.toFixed(1)).join(' ');
+  const [hw, hd] = [w / 2, d / 2];
+  return <g className={extra}>
+    <path d={`M${P(-hw, hd, 0)}L${P(hw, hd, 0)}L${P(hw, hd, t)}L${P(-hw, hd, t)}Z`} fill={left}/>
+    <path d={`M${P(hw, hd, 0)}L${P(hw, -hd, 0)}L${P(hw, -hd, t)}L${P(hw, hd, t)}Z`} fill={right}/>
+    <path d={`M${P(-hw, -hd, t)}L${P(hw, -hd, t)}L${P(hw, hd, t)}L${P(-hw, hd, t)}Z`} fill={top}/>
+  </g>;
+}
+function SideChip({ cx, cy, w, d = w, pins = 4, far = false, glow = '#9b6bff' }) {
+  const t = Math.max(5, w * 0.3), hw = w / 2, hd = d / 2;
+  const lead = (x, y, dx, dy, k) => { const a = ipt(cx, cy, x, y, t * 0.45), m = ipt(cx, cy, x + dx * 3, y + dy * 3, t * 0.45), b = ipt(cx, cy, x + dx * 4.5, y + dy * 4.5, 0), e = ipt(cx, cy, x + dx * 8, y + dy * 8, 0);
+    return <path key={k} d={`M${a[0]} ${a[1]}L${m[0]} ${m[1]}L${b[0]} ${b[1]}L${e[0]} ${e[1]}`} className="sc-lead"/>; };
+  const leads = [];
+  for (let i = 0; i < pins; i++) { const u = -hw + (w / (pins + 1)) * (i + 1); leads.push(lead(u, hd, 0, 1, `f${i}`)); leads.push(lead(u, -hd, 0, -1, `b${i}`)); }
+  const top = ipt(cx, cy, 0, 0, t);
+  return <g className={`side-chip ${far ? 'far' : ''}`}>
+    <ellipse cx={cx} cy={cy + 4} rx={w * 1.25} ry={w * 0.55} fill="#000" opacity=".45"/>
+    {leads.filter(l => l.key.startsWith('b'))}
+    {box(cx, cy, w, d, t, 'url(#sc-top)', '#17161f', '#0f0f16')}
+    <path d={`M${ipt(cx, cy, -hw, -hd, t).join(' ')}L${ipt(cx, cy, hw, -hd, t).join(' ')}L${ipt(cx, cy, hw, hd, t).join(' ')}`} fill="none" stroke={glow} strokeOpacity=".35" strokeWidth=".8"/>
+    <circle cx={top[0] - w * 0.5} cy={top[1] - w * 0.05} r="1.4" fill="#6b6785"/>
+    {leads.filter(l => l.key.startsWith('f'))}
+  </g>;
+}
+function Passive({ cx, cy, len = 12, far = false, rot = false }) {
+  const w = rot ? 6 : len, d = rot ? len : 6, t = 4.5;
+  const cap = rot ? [[0, -d / 2 + 1.8], [0, d / 2 - 1.8]] : [[-w / 2 + 1.8, 0], [w / 2 - 1.8, 0]];
+  return <g className={`passive ${far ? 'far' : ''}`}>
+    <ellipse cx={cx} cy={cy + 2} rx={len * 0.9} ry={len * 0.4} fill="#000" opacity=".4"/>
+    {box(cx, cy, w, d, t, '#2a2838', '#1b1a26', '#141320')}
+    {cap.map(([x, y], i) => <g key={i}>{box(cx + 1.04 * x - 1.04 * y, cy + 0.6 * x + 0.6 * y, rot ? 6.4 : 3.6, rot ? 3.6 : 6.4, t + 0.3, '#cfcadf', '#8d88a1', '#6f6a84')}</g>)}
+  </g>;
+}
+const sideChips = [
+  { cx: 150, cy: 228, w: 40, d: 30, pins: 5 }, { cx: 628, cy: 226, w: 40, d: 30, pins: 5, glow: '#4fe3ff' },
+  { cx: 110, cy: 362, w: 28, pins: 3, glow: '#4fe3ff' }, { cx: 672, cy: 362, w: 30, pins: 4 },
+  { cx: 196, cy: 486, w: 44, d: 32, pins: 5, far: true }, { cx: 590, cy: 488, w: 42, d: 30, pins: 5, far: true, glow: '#4fe3ff' },
+  { cx: 268, cy: 116, w: 26, pins: 3, far: true }, { cx: 516, cy: 112, w: 26, pins: 3, far: true, glow: '#4fe3ff' },
+];
+const passives = [
+  { cx: 214, cy: 176 }, { cx: 232, cy: 186, rot: true }, { cx: 560, cy: 168, rot: true }, { cx: 578, cy: 180 },
+  { cx: 92, cy: 292 }, { cx: 690, cy: 292, rot: true }, { cx: 246, cy: 404, rot: true }, { cx: 534, cy: 404 },
+  { cx: 312, cy: 520, far: true }, { cx: 470, cy: 524, far: true, rot: true }, { cx: 64, cy: 440, far: true }, { cx: 724, cy: 440, far: true, rot: true },
+  { cx: 350, cy: 92, far: true, rot: true }, { cx: 430, cy: 90, far: true },
+];
 const spark = 'M0 18L6 14L10 16L15 6L19 12L24 9L29 15L34 4L38 11L44 8L50 13L56 2L60 10';
 // data packets inside the die: IN pad → SRAM → pipeline stages → regfile → OUT pad
 const flows = [
@@ -107,6 +157,8 @@ export function HeroChip() {
       <defs>
         <radialGradient id="hc-aura"><stop stopColor="#8961dc" stopOpacity=".28"/><stop offset="1" stopColor="#8961dc" stopOpacity="0"/></radialGradient>
         <filter id="hc-neon" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="4"/></filter>
+        <linearGradient id="sc-top" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#2b2a3c"/><stop offset=".55" stopColor="#1c1b29"/><stop offset="1" stopColor="#14131e"/></linearGradient>
+        <linearGradient id="sc-metal" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#e6e2f2"/><stop offset=".5" stopColor="#8b86a0"/><stop offset="1" stopColor="#c9c4da"/></linearGradient>
       </defs>
       <ellipse cx="390" cy="330" rx="300" ry="190" fill="url(#hc-aura)"/>
       <g className="iso-grid">{Array.from({ length: 26 }, (_, i) => <path key={i} d={`M${-420 + i * 48} 0l1040 600M${-420 + i * 48} 600l1040 -600`}/>)}</g>
@@ -115,8 +167,7 @@ export function HeroChip() {
         {traces.map((t, i) => <g key={i}><path d={t.d} stroke={t.c} className="neon-line"/>{t.end && <circle cx={t.end[0]} cy={t.end[1]} r="3.2" fill="none" stroke={t.c} className="neon-end"/>}</g>)}
         <path d="M390 40V150" stroke="#e15bff" className="neon-line"/><path d="M390 440V590" stroke="#4fe3ff" className="neon-line"/>
       </g>
-      {/* Small board components establish scale without changing the chip's focus targets. */}
-      <g className="hc-board-parts">{[[158,130],[604,155],[114,440],[637,446]].map(([x,y],i)=><g key={i} transform={`translate(${x} ${y})`}><path d="M-15 0L0 -9L21 3L6 12Z" fill="#25253a"/><path d="M-15 0V8L6 20L21 11V3L6 12Z" fill="#151623" stroke="#43405c" strokeWidth=".6"/><path d="M-12 2L5 12M1 -7L18 3" stroke="#8c829f" strokeWidth="2"/></g>)}</g>
+      <g className="side-chips" aria-hidden="true">{passives.map((c, i) => <Passive key={`p${i}`} {...c}/>)}{sideChips.map((c, i) => <SideChip key={i} {...c}/>)}</g>
       <ellipse cx="390" cy="452" rx="220" ry="46" fill="#07080e" opacity=".55"/>
     </svg>
     <svg ref={svg} className="chip-scene" viewBox="0 0 780 600" role="img" aria-label={vi ? 'Con chip RTL với xung clock, luồng dữ liệu qua bốn khối: AES-256, FP32 ALU, MAC int8 cho MNIST và bộ giải mã QC-LDPC' : 'An RTL chip with a clock tree, four blocks: AES-256, FP32 ALU, int8 MNIST MAC array and a QC-LDPC decoder'}>

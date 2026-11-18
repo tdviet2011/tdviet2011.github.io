@@ -1170,3 +1170,30 @@ html.booting body { overflow: hidden; }
   .cta-traces { opacity: .5; width: 100%; }
 }
 .cta-panel .contact-card { background: color-mix(in srgb, var(--surface) 92%, var(--bg)); }
+
+/* ---------- 2026-11-19: frames and mini schematics from Viet's reference ---------- */
+.tv-card { position: relative; border-color: color-mix(in srgb, #b28bff 55%, var(--border)); background: radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, #b28bff 14%, transparent), transparent 55%), radial-gradient(90% 70% at 100% 100%, color-mix(in srgb, #4fe3ff 8%, transparent), transparent 60%), var(--surface); box-shadow: 0 0 0 1px color-mix(in srgb, #b28bff 12%, transparent), 0 24px 70px -36px #b28bffaa, inset 0 1px 0 #ffffff0d; }
+.tv-traces { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: .75; }
+.tv-card > *:not(.tv-traces) { position: relative; }
+.tv-head { display: flex; align-items: center; gap: 14px; }
+.tv-mark { font: italic 700 34px/1 'Space Grotesk', sans-serif; letter-spacing: -3px; background: linear-gradient(135deg, #e9dcff, #b28bff 45%, #7c4dff); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 10px #b28bff66); padding-right: 4px; }
+.tv-name { display: flex; flex-direction: column; gap: 3px; } .tv-name b { font: 500 12px 'JetBrains Mono', monospace; letter-spacing: .28em; color: var(--text); } .tv-name small { font: 400 10px 'JetBrains Mono', monospace; letter-spacing: .25em; color: var(--muted); }
+.tv-head .identity-mark { margin-left: auto; }
+.tv-card .avatar-frame img { border-color: color-mix(in srgb, #b28bff 60%, transparent); box-shadow: 0 0 0 6px color-mix(in srgb, #b28bff 12%, transparent), 0 0 40px -6px #b28bff88; }
+.edu-glow { position: relative; border-color: color-mix(in srgb, #b28bff 50%, var(--border)) !important; background: linear-gradient(135deg, color-mix(in srgb, #b28bff 13%, var(--surface)), var(--surface) 55%) !important; box-shadow: 0 24px 70px -40px #b28bffaa; }
+.edu-glow .university-symbol { color: #c9b2ff; filter: drop-shadow(0 0 10px #b28bff88); }
+.cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
+.cta-sep { width: 1px; height: 30px; background: var(--border); }
+.cta-link { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; color: var(--text); }
+.cta-link:hover { color: #4fe3ff; }
+.mini-schematic { float: right; width: 210px; margin: 0 0 12px 18px; padding: 8px 8px 4px; border: 1px solid color-mix(in srgb, #b28bff 30%, var(--border)); border-radius: 8px; background: color-mix(in srgb, var(--bg) 60%, transparent); }
+.mini-schematic figcaption { font: 500 8.5px 'JetBrains Mono', monospace; letter-spacing: .08em; color: var(--muted); margin-bottom: 2px; }
+.mini-schematic svg { display: block; width: 100%; height: auto; font-family: 'JetBrains Mono', monospace; }
+.mini-schematic text { fill: var(--text); } .mini-schematic .ms-lbl { fill: var(--muted); } .mini-schematic .ms-dim { fill: var(--subtle, var(--muted)); } .mini-schematic .ms-strong { fill: #4fe3ff; font-weight: 600; }
+.ms-box { fill: color-mix(in srgb, #b28bff 10%, var(--bg)); stroke: #b28bff; stroke-width: 1; } .ms-alu { stroke: #4fe3ff; fill: color-mix(in srgb, #4fe3ff 10%, var(--bg)); }
+.ms-wire { fill: none; stroke: #4fe3ff; stroke-width: 1.1; } .ms-loop { stroke: #e15bff; stroke-dasharray: 3 2; } .ms-head { fill: #4fe3ff; }
+.ms-syn { stroke: #b28bff; stroke-opacity: .35; stroke-width: .7; }
+.ms-node { fill: color-mix(in srgb, #b28bff 18%, var(--bg)); stroke: #b28bff; stroke-width: 1.3; } .ms-node.n1 { stroke: #c9a8ff; } .ms-node.n2 { stroke: #4fe3ff; }
+.project-card:hover .mini-schematic { border-color: color-mix(in srgb, #4fe3ff 50%, var(--border)); }
+@media (max-width: 760px) { .mini-schematic { float: none; width: 100%; max-width: 280px; margin: 0 0 14px; } .cta-sep { display: none; } }
+.contact-bottom.cta-row { justify-content: flex-start; } .cta-row .cta-link { flex: none; }
