@@ -12,11 +12,13 @@ const LABS = {
   'tiny-mnist': ['wave', 'code'],
 };
 export const hasLab = (id) => !!LABS[id];
+let nextTab = null;
+export const openLabTab = (tab) => { nextTab = tab; };
 
 export function ProjectLab({ id, lang }) {
   const vi = lang === 'vi';
   const tabs = LABS[id];
-  const [tab, setTab] = useState(tabs?.[0]);
+  const [tab, setTab] = useState(() => { const t = nextTab && tabs?.includes(nextTab) ? nextTab : tabs?.[0]; nextTab = null; return t; });
   if (!tabs) return null;
   const names = {
     demo: id === 'aes-256' ? (vi ? 'Thử mã hóa & tiêm lỗi' : 'Encrypt & inject faults') : (vi ? 'Máy tính FP32' : 'FP32 calculator'),

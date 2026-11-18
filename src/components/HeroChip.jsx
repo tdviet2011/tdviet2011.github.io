@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePortfolio, useReducedMotion } from '../hooks/usePortfolio';
+import './HeroChip.css';
 
 // Isometric chip with a small working "floorplan": I/O ring, SRAM macro,
 // 4-stage pipeline, register file, FSM controller and a clock H-tree.
@@ -21,7 +22,7 @@ const pads = [...pinPos.flatMap((p, i) => [[p - 3, 26, i], [26, p - 3, i + 14], 
 // SRAM macro 8x8 bit cells
 const sram = Array.from({ length: 64 }, (_, i) => ({ x: 44 + (i % 8) * 7, y: 44 + Math.floor(i / 8) * 7, d: ((i * 37) % 23) / 23 * 4 * T }));
 // neon trace bundles: leave the package along the isometric axis, then bend horizontal
-const NEON = ['#4fe3ff', '#9b6bff', '#e15bff', '#6f8bff'];
+const NEON = ['#83e5e4', '#b698f4', '#c4a6fa', '#7fa3d8'];
 const edges = [
   { at: p => [p, 211], d: [0, 1], hx: -1 },
   { at: p => [-11, p], d: [-1, 0], hx: -1 },
@@ -99,8 +100,8 @@ export function HeroChip() {
   }, [halted]);
   const vi = lang === 'vi';
   const pinCls = (p) => p.side === 1 ? 'pin pin-in' : p.side === 2 ? 'pin pin-out' : p.i % 4 === 0 ? 'pin pin-pwr' : 'pin';
-  return <div ref={lab} className={`chip-lab ${paused ? 'paused' : ''} ${hidden ? 'offscreen' : ''} ${focus ? 'has-focus' : ''}`} data-focus={focus || undefined} style={{ '--T': `${T}s` }}>
-    <div className="chip-lab-top"><span className="chip-dots"><i/><i/><i/></span><span>SILICON / DATA FLOW</span><span className="chip-live"><i/>{paused ? 'HALT' : 'LIVE'}</span></div>
+  return <div ref={lab} className={`chip-lab chip-premium ${paused ? 'paused' : ''} ${hidden ? 'offscreen' : ''} ${focus ? 'has-focus' : ''}`} data-focus={focus || undefined} style={{ '--T': `${T}s` }}>
+    <div className="chip-lab-top"><span className="chip-dots"><i/><i/><i/></span><span>{vi ? 'SILICON / MÔ PHỎNG THỊ GIÁC' : 'SILICON / VISUAL SIMULATION'}</span><span className="chip-live"><i/>{paused ? 'HALT' : 'LIVE'}</span></div>
     <div className="chip-stage">
     <svg className="chip-bg" viewBox="0 0 780 600" aria-hidden="true">
       <defs>
@@ -114,11 +115,17 @@ export function HeroChip() {
         {traces.map((t, i) => <g key={i}><path d={t.d} stroke={t.c} className="neon-line"/>{t.end && <circle cx={t.end[0]} cy={t.end[1]} r="3.2" fill="none" stroke={t.c} className="neon-end"/>}</g>)}
         <path d="M390 40V150" stroke="#e15bff" className="neon-line"/><path d="M390 440V590" stroke="#4fe3ff" className="neon-line"/>
       </g>
+      {/* Small board components establish scale without changing the chip's focus targets. */}
+      <g className="hc-board-parts">{[[158,130],[604,155],[114,440],[637,446]].map(([x,y],i)=><g key={i} transform={`translate(${x} ${y})`}><path d="M-15 0L0 -9L21 3L6 12Z" fill="#25253a"/><path d="M-15 0V8L6 20L21 11V3L6 12Z" fill="#151623" stroke="#43405c" strokeWidth=".6"/><path d="M-12 2L5 12M1 -7L18 3" stroke="#8c829f" strokeWidth="2"/></g>)}</g>
       <ellipse cx="390" cy="452" rx="220" ry="46" fill="#07080e" opacity=".55"/>
     </svg>
     <svg ref={svg} className="chip-scene" viewBox="0 0 780 600" role="img" aria-label={vi ? 'Con chip RTL với xung clock, luồng dữ liệu qua bốn khối: AES-256, FP32 ALU, MAC int8 cho MNIST và bộ giải mã QC-LDPC' : 'An RTL chip with a clock tree, four blocks: AES-256, FP32 ALU, int8 MNIST MAC array and a QC-LDPC decoder'}>
       <defs>
         <filter id="hc-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <linearGradient id="hc-metal" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#e0dbef"/><stop offset=".3" stopColor="#77718e"/><stop offset=".6" stopColor="#c4bed8"/><stop offset="1" stopColor="#4a455b"/></linearGradient>
+        <linearGradient id="hc-glass" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#d8bcff" stopOpacity=".35"/><stop offset=".4" stopColor="#9d6df0" stopOpacity=".08"/><stop offset="1" stopColor="#a88cec" stopOpacity=".25"/></linearGradient>
+        <linearGradient id="hc-glass-side" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#c6a0ff" stopOpacity=".65"/><stop offset="1" stopColor="#7245b7" stopOpacity=".2"/></linearGradient>
+        <linearGradient id="hc-reflection"><stop stopColor="#ffffff" stopOpacity="0"/><stop offset=".5" stopColor="#f4e9ff" stopOpacity=".22"/><stop offset="1" stopColor="#ffffff" stopOpacity="0"/></linearGradient>
         <linearGradient id="hc-top" x2="1" y2="1"><stop stopColor="#2c2640"/><stop offset="1" stopColor="#171a28"/></linearGradient>
         <radialGradient id="hc-core"><stop stopColor="#8ef0ff" stopOpacity=".35"/><stop offset=".6" stopColor="#9b6bff" stopOpacity=".12"/><stop offset="1" stopColor="#9b6bff" stopOpacity="0"/></radialGradient>
         <linearGradient id="hc-l"><stop stopColor="#5d4290"/><stop offset="1" stopColor="#3a2d5c"/></linearGradient>
@@ -130,6 +137,8 @@ export function HeroChip() {
         <path d="M390 440V590" stroke="#4fe3ff" pathLength="100" className="neon-pulse" style={{ animationDuration: '2.2s' }}/>
       </g>
       <g className="chip-float">
+        {/* Bent metallic contacts sit under the substrate; original pin hooks remain intact. */}
+        <g className="hc-metal-leads" aria-hidden="true">{pins.map(p=>{const x=p.x+p.w/2,y=p.y+p.h/2;const a=iso(x,y);const b=iso(x+(p.side===1?-9:p.side===2?9:0),y+(p.side===0?-9:p.side===3?9:0));return <path key={p.k} d={`M${a[0]} ${a[1]+8}L${a[0]} ${a[1]+24}L${b[0]} ${b[1]+31}`} fill="none" stroke="url(#hc-metal)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>})}</g>
         {/* package sides */}
         <path d={`${P([[0, 200], [200, 200]])} l0 30 L${iso(0, 200)[0]} ${iso(0, 200)[1] + 30}Z`} fill="url(#hc-l)" stroke="#8d6fd0" strokeWidth=".8"/>
         <path d={`${P([[200, 200], [200, 0]])} l0 30 L${iso(200, 200)[0]} ${iso(200, 200)[1] + 30}Z`} fill="url(#hc-r)" stroke="#6f58a6" strokeWidth=".8"/>
@@ -179,6 +188,17 @@ export function HeroChip() {
         </g>
         <path className="chip-scan" d={P([[0, 200], [0, 0], [200, 0]])}/>
         <path className="edge-strip" d={P([[0, 200], [200, 200], [200, 0]])}/>
+        {/* Translucent elevated lid: exposed logic remains visible below the glass. */}
+        <g className="hc-glass-lid" aria-hidden="true">
+          {[[[0,200],[200,200]],[[200,200],[200,0]]].map(([a,b],i)=>{const p=iso(...a),q=iso(...b);return <path key={i} d={`M${p[0]} ${p[1]}L${q[0]} ${q[1]}V${q[1]-30}L${p[0]} ${p[1]-30}Z`} fill="url(#hc-glass-side)" stroke="#b899ed" strokeWidth=".5"/>})}
+          <g transform="translate(0 -30)">
+            <path d={`${P([[0,0],[200,0],[200,200],[0,200]])}Z`} fill="url(#hc-glass)" stroke="#c7a7ff" strokeWidth="1.7"/>
+            <path d={`${P([[7,7],[193,7],[193,193],[7,193]])}Z`} fill="none" stroke="#d7bfff" strokeOpacity=".45" strokeWidth=".8"/>
+            <path d={`${P([[8,20],[80,8],[193,121],[193,158]])}Z`} fill="url(#hc-reflection)"/>
+            <path className="hc-lid-edge" d={P([[0,200],[0,0],[200,0]])}/>
+          </g>
+          {[[0,0],[200,0],[0,200],[200,200]].map(([x,y])=>{const [a,b]=iso(x,y);return <path key={x+'-'+y} d={`M${a} ${b}V${b-30}`} stroke="#d2b6ff" strokeOpacity=".55" strokeWidth="1.2"/>})}
+        </g>
       </g>
       <g className="hud">
         <path d="M20 58V40H38M742 40H760V58M20 548V566H38M742 566H760V548" className="hud-bracket"/>

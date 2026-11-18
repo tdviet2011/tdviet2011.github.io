@@ -1,0 +1,26 @@
+/* Isolated premium chip skin. Keep selectors scoped: globals.css also uses .die in ProjectLab. */
+.chip-lab.chip-premium { background: #0c101b; border-color: #333044; box-shadow: inset 0 1px 0 #e1ceff0a, 0 22px 70px #0002; }
+.chip-premium .chip-stage { background: #0a0d18; }
+.chip-premium .iso-grid { opacity: .65; }
+.chip-premium .neon-glow { opacity: .24; }
+.chip-premium .neon-line { opacity: .43; stroke-width: 1; }
+.chip-premium .neon-pulse { stroke-width: 2.4; stroke-dasharray: 4 96; }
+.chip-premium .chip-float { animation: hc-premium-hover 8s ease-in-out infinite; }
+.chip-premium .pin { fill: url(#hc-metal); }
+.chip-premium .die { fill: #1c1a2c; stroke: #9b80bb; stroke-width: .7; }
+.chip-premium .die-ring { stroke: #c7a8ff; opacity: .65; }
+.chip-premium .block { fill: #24223a; stroke: #b196d4; }
+.chip-premium .die-text { fill: #d1bce8; }
+.chip-premium .die-text.mark { fill: #c7b6de; }
+.chip-premium .edge-strip { stroke: #9eeaef; stroke-width: 1.5; }
+.chip-premium .hc-glass-lid { pointer-events: none; }
+.chip-premium .hc-lid-edge { fill: none; stroke: #eedcff; stroke-width: 2; stroke-dasharray: 45 530; animation: hc-premium-edge 6s linear infinite; }
+.chip-premium .hc-metal-leads { opacity: .95; }
+.chip-premium .hud-read { opacity: .7; }
+.chip-premium .hud-bracket { stroke-opacity: .4; }
+.chip-premium .core-aura { opacity: .65; }
+.chip-premium .chip-lab-top { color: #aaa3bd; letter-spacing: .8px; }
+.chip-premium .chip-lab-bottom { letter-spacing: .7px; }
+@keyframes hc-premium-hover { 50% { transform: translateY(-4px); } }
+@keyframes hc-premium-edge { to { stroke-dashoffset: -575; } }
+@media (prefers-reduced-motion: reduce) { .chip-premium .chip-float, .chip-premium .hc-lid-edge { animation: none !important; } }

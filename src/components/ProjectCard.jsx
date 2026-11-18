@@ -4,6 +4,7 @@ import { fireBeam, chipFocus } from './dataBeam';
 import { ProjectArtwork } from './Artwork';
 import { BlockDiagram } from './BlockDiagram';
 import { diagrams } from '../data/diagrams';
+import { hasLab, openLabTab } from '../lab/ProjectLab';
 
 export function ProjectCard({ project, onOpen, wide = false, flip = false }) {
   const { t, text, lang } = usePortfolio();
@@ -13,9 +14,11 @@ export function ProjectCard({ project, onOpen, wide = false, flip = false }) {
     <div className="project-copy">
       <p className="eyebrow">{text(project.eyebrow)}</p>
       <h3>{text(project.title)}</h3>
+      {project.proof && <p className="proof-pill"><Icon name="tick" size={15}/>{text(project.proof)}</p>}
       {wide && <p className="project-hook">{text(project.summary)}</p>}
       <p className="project-description">{text(project.description)}</p>
       <div className="tag-list">{project.tags.map(tag => <span className="tag" key={tag}>{tag}</span>)}</div>
+      {hasLab(project.id) && <div className="card-links">{[['wave', lang === 'vi' ? 'Waveform mô phỏng' : 'Simulation waveform', 'signal'], ['code', lang === 'vi' ? 'Mã Verilog' : 'Verilog source', 'terminal'], ...(project.id === 'aes-256' || project.id === 'floating-point-alu' ? [['demo', lang === 'vi' ? 'Thử demo' : 'Try the demo', 'chip']] : [])].map(([tab, label, icon]) => <button key={tab} type="button" onClick={e => { e.stopPropagation(); openLabTab(tab); fireBeam(e.currentTarget.closest('.project-card'), () => onOpen(project.id), { from: project.id }); }}><Icon name={icon} size={15}/>{label}<Icon name="diagonal" size={13}/></button>)}</div>}
       <div className="project-card-bottom">
         <div className="project-metric"><strong>{project.metric.value}</strong><span>{text(project.metric.label)}</span><small>{text(project.metric.context)}</small></div>
         <button className="round-arrow" aria-label={`${t.caseStudy}: ${text(project.title)}`} onClick={e => { e.stopPropagation(); fireBeam(e.currentTarget.closest('.project-card'), () => onOpen(project.id), { from: project.id }); }}><Icon name="diagonal" size={22}/></button>
