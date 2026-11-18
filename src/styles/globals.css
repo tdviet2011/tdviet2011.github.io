@@ -872,3 +872,60 @@ img { max-width: 100%; }
 .chip-lab[data-focus='tiny-mnist'] .blk-tiny-mnist .block, .chip-lab[data-focus='qc-ldpc'] .blk-qc-ldpc .block { fill: #24476a; stroke: #b9f6ff; }
 .chip-lab.has-focus .die-text { transition: fill .3s; }
 .chip-lab-bottom .focus-name { color: #8ef0ff; }
+/* ---- Roadmap (signal-bus journey) ---- */
+.roadmap { margin-top: 40px; border: 1px solid var(--border); border-radius: 10px; padding: 22px 26px 28px; position: relative; overflow: hidden;
+  background: radial-gradient(ellipse at 45% 0%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 60%), color-mix(in srgb, var(--surface) 55%, var(--bg)); }
+.roadmap-head { display: flex; justify-content: space-between; gap: 16px; font: 400 9px 'JetBrains Mono', monospace; letter-spacing: 1.3px; color: var(--subtle); }
+.roadmap-legend { display: inline-flex; align-items: center; gap: 7px; }
+.roadmap-legend i { width: 14px; height: 3px; border-radius: 2px; margin-left: 10px; }
+.lg-done { background: linear-gradient(90deg,#4fe3ff,#9b6bff); } .lg-now { background: #e15bff; box-shadow: 0 0 8px #e15bff; } .lg-next { background: repeating-linear-gradient(90deg, var(--subtle) 0 3px, transparent 3px 6px); }
+.roadmap-track { position: relative; height: 34px; margin: 22px calc(50% / var(--count)) 0; }
+.roadmap-clk { position: absolute; left: 0; right: 0; top: 0; width: 100%; height: 10px; }
+.roadmap-clk path { fill: none; stroke: color-mix(in srgb, #4fe3ff 45%, transparent); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.roadmap-wire { position: absolute; left: 0; right: 0; top: 24px; height: 2px; background: repeating-linear-gradient(90deg, var(--border) 0 6px, transparent 6px 11px); }
+.roadmap-fill { position: absolute; left: 0; top: -1px; height: 4px; border-radius: 2px; width: calc(100% * var(--now) / (var(--count) - 1));
+  background: linear-gradient(90deg, #4fe3ff, #9b6bff 70%, #e15bff); box-shadow: 0 0 12px #9b6bffaa, 0 0 3px #4fe3ff; overflow: visible; }
+.roadmap-packet { position: absolute; top: -3px; left: 0; width: 18px; height: 10px; border-radius: 5px; background: #fff; box-shadow: 0 0 12px 3px #8ef0ff; animation: rm-packet 2.6s cubic-bezier(.5,0,.5,1) infinite; }
+.roadmap-packet.p2 { animation-delay: 1.3s; background: #f6dcff; box-shadow: 0 0 12px 3px #e15bff; }
+@keyframes rm-packet { from { left: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } to { left: calc(100% - 18px); opacity: 0; } }
+.roadmap-stages { list-style: none; display: grid; grid-template-columns: repeat(var(--count), 1fr); gap: 14px; margin-top: -22px; padding: 0; }
+.rm-stage { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.rm-node { width: 30px; height: 30px; transform: rotate(45deg); border: 1.5px solid var(--subtle); background: var(--bg); display: grid; place-items: center; border-radius: 4px; position: relative; z-index: 1; }
+.rm-node span { transform: rotate(-45deg); font: 500 9px 'JetBrains Mono', monospace; color: var(--muted); }
+.rm-done .rm-node { border-color: #4fe3ff; background: color-mix(in srgb, #4fe3ff 14%, var(--bg)); } .rm-done .rm-node span { color: #8ef0ff; }
+.rm-now .rm-node { border-color: #e15bff; background: #2a1638; box-shadow: 0 0 0 5px #e15bff22, 0 0 22px #e15bffaa; animation: rm-pulse 1.6s ease-in-out infinite; }
+.rm-now .rm-node span { color: #fbe4ff; }
+@keyframes rm-pulse { 50% { box-shadow: 0 0 0 9px #e15bff10, 0 0 30px #e15bffdd; } }
+.rm-card { margin-top: 22px; width: 100%; border: 1px solid var(--border); border-radius: 7px; padding: 16px 16px 18px; background: var(--bg); position: relative; transition: border-color .25s, transform .25s; height: 100%; }
+.rm-card::before { content: ''; position: absolute; left: 50%; top: -22px; width: 1px; height: 22px; background: var(--border); }
+.rm-done .rm-card::before { background: #4fe3ff88; } .rm-now .rm-card::before { background: #e15bff; box-shadow: 0 0 6px #e15bff; }
+.rm-now .rm-card { border-color: color-mix(in srgb, #e15bff 55%, var(--border)); box-shadow: 0 14px 40px -24px #e15bff; }
+.rm-next .rm-card { border-style: dashed; background: transparent; }
+.rm-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); }
+.rm-date { display: flex; justify-content: space-between; gap: 6px; font: 400 9px 'JetBrains Mono', monospace; letter-spacing: 1.2px; color: var(--subtle); }
+.rm-date b { font-weight: 400; color: #e15bff; letter-spacing: .8px; }
+.rm-card h3 { font-size: 17px; font-weight: 500; letter-spacing: -.4px; margin-top: 8px; }
+.rm-card p { font-size: 12px; color: var(--muted); margin-top: 7px; line-height: 1.6; }
+.rm-chips, .rm-projects { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.rm-chips span { font: 400 9px 'JetBrains Mono', monospace; border: 1px solid var(--border); border-radius: 3px; padding: 3px 6px; color: var(--muted); }
+.rm-projects button { display: inline-flex; gap: 6px; align-items: center; font: 500 10px 'JetBrains Mono', monospace; padding: 5px 8px; border-radius: 4px; color: #f2dcff; border: 1px solid #e15bff66; background: #e15bff14; transition: background .2s, box-shadow .2s; }
+.rm-projects button:hover { background: #e15bff30; box-shadow: 0 0 12px #e15bff55; }
+.education-grid.v2 { grid-template-columns: 1fr; margin-top: 24px; }
+.education-grid.v2 .education-card { display: grid; grid-template-columns: auto 1fr 1.1fr; column-gap: 32px; align-items: start; }
+.education-grid.v2 .education-card > .university-symbol { grid-row: span 5; }
+.education-grid.v2 .education-card > .course-grades { grid-column: 3; grid-row: 1 / span 6; margin-top: 0; }
+[data-theme='light'] .rm-now .rm-node { background: #fbe9ff; } [data-theme='light'] .rm-now .rm-node span { color: #8a1fa6; }
+[data-theme='light'] .rm-projects button { color: #8a1fa6; }
+@media (prefers-reduced-motion: reduce) { .roadmap-packet, .rm-now .rm-node { animation: none; } }
+@media (max-width: 900px) {
+  .roadmap { padding: 20px 18px 22px; }
+  .roadmap-legend { display: none; }
+  .roadmap-track { display: none; }
+  .roadmap-stages { grid-template-columns: 1fr; gap: 0; margin-top: 18px; position: relative; }
+  .roadmap-stages::before { content: ''; position: absolute; left: 14px; top: 10px; bottom: 10px; width: 2px; background: linear-gradient(#4fe3ff, #9b6bff 45%, #e15bff 55%, var(--border) 60%); }
+  .rm-stage { flex-direction: row; align-items: flex-start; gap: 18px; padding-bottom: 16px; }
+  .rm-node { flex: none; width: 28px; height: 28px; margin-top: 14px; }
+  .rm-card { margin-top: 0; }
+  .rm-card::before { display: none; }
+  .education-grid.v2 .education-card { display: block; }
+}
