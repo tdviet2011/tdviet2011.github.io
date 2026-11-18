@@ -831,7 +831,7 @@ img { max-width: 100%; }
 @keyframes hc-spark { from { stroke-dashoffset: 120; } to { stroke-dashoffset: -120; } }
 /* data beam: chip → selected element */
 .beam-layer { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 60; overflow: visible; }
-.beam-layer path { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: beam-draw .42s cubic-bezier(.2,.7,.2,1) forwards; }
+.beam-layer path { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: beam-draw .24s cubic-bezier(.2,.7,.2,1) forwards; }
 .beam-glow { stroke-width: 7; opacity: .55; filter: url(#beam-glow); }
 .beam-core { stroke: #f4eaff; stroke-width: 1.6; }
 .beam-packet { filter: url(#beam-glow); }
@@ -848,7 +848,7 @@ img { max-width: 100%; }
 }
 .project-card { cursor: pointer; }
 /* edge run + inner sweep (replaces the full-box glow) */
-.edge-run path { fill: none; stroke-linecap: round; stroke-dasharray: .3 1; stroke-dashoffset: .3; animation: edge-run .62s cubic-bezier(.3,.6,.3,1) forwards; }
+.edge-run path { fill: none; stroke-linecap: round; stroke-dasharray: .3 1; stroke-dashoffset: .3; animation: edge-run .45s cubic-bezier(.3,.6,.3,1) forwards; }
 .edge-glow { stroke-width: 8; opacity: .85; filter: url(#beam-glow); }
 .edge-core { stroke: #fbf6ff; stroke-width: 2; }
 .edge-spark { filter: url(#beam-glow); animation: edge-spark .5s ease-out forwards; transform-box: fill-box; transform-origin: center; }
@@ -857,7 +857,7 @@ img { max-width: 100%; }
 .data-scan { position: relative; }
 .data-scan::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 3;
   background: linear-gradient(100deg, transparent 35%, color-mix(in srgb, var(--scan-color, #4fe3ff) 22%, transparent) 48%, color-mix(in srgb, #ffffff 18%, transparent) 50%, color-mix(in srgb, var(--scan-color, #4fe3ff) 22%, transparent) 52%, transparent 65%) no-repeat;
-  background-size: 300% 100%; background-position: 100% 0; animation: data-scan .9s ease-out forwards; }
+  background-size: 300% 100%; background-position: 100% 0; animation: data-scan .6s ease-out forwards; }
 @keyframes data-scan { from { background-position: 100% 0; opacity: 1; } 85% { opacity: 1; } to { background-position: 0 0; opacity: 0; } }
 /* chip block focus (hover a project → its block on the chip lights up) */
 .blk { transition: opacity .3s ease; }

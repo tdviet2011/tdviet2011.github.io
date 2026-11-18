@@ -60,7 +60,7 @@ function energize(svg, target, color) {
 
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export function fireBeam(target, action, { delay = 980, from = null } = {}) {
+export function fireBeam(target, action, { delay = 340, from = null } = {}) {
   if (!target || reduced() || busy) { action?.(); return; }
   busy = true;
   const svg = getLayer();
@@ -75,7 +75,7 @@ export function fireBeam(target, action, { delay = 980, from = null } = {}) {
   const packet = g.querySelector('.beam-packet');
   const len = path.getTotalLength();
   const start = performance.now();
-  const travel = 420;
+  const travel = 240;
   function step(now) {
     const k = Math.min(1, (now - start) / travel);
     const e = 1 - Math.pow(1 - k, 3);
