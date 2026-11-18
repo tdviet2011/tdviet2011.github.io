@@ -8,7 +8,7 @@ import { diagrams } from '../data/diagrams';
 export function ProjectCard({ project, onOpen, wide = false, flip = false }) {
   const { t, text, lang } = usePortfolio();
   const spec = project.diagram && diagrams[project.diagram];
-  return <article className={`project-card ${wide ? 'project-wide' : ''} ${flip ? 'project-flip' : ''}`} onMouseEnter={() => chipFocus(project.id)} onMouseLeave={() => chipFocus(null)} onClick={e => { if (e.target.closest('a')) return; fireBeam(e.currentTarget, () => onOpen(project.id), { from: project.id }); }}>
+  return <article data-project={project.id} className={`project-card ${wide ? 'project-wide' : ''} ${flip ? 'project-flip' : ''}`} onMouseEnter={() => chipFocus(project.id)} onMouseLeave={() => chipFocus(null)} onClick={e => { if (e.target.closest('a')) return; fireBeam(e.currentTarget, () => onOpen(project.id), { from: project.id }); }}>
     <div className={`project-visual ${spec ? 'has-diagram' : ''}`}>{spec ? <div className="card-diagram"><BlockDiagram spec={spec} lang={lang}/></div> : <ProjectArtwork kind={project.art}/>}<span className="visual-index">{project.number} / {project.category}</span><span className="visual-caption">{spec ? t.diagramCaption : t.artworkCaption}</span></div>
     <div className="project-copy">
       <p className="eyebrow">{text(project.eyebrow)}</p>

@@ -1,5 +1,5 @@
 import { usePortfolio } from '../hooks/usePortfolio';
-import { fireBeam, chipFocus } from './dataBeam';
+import { goToProject, chipFocus } from './dataBeam';
 
 // Journey drawn as a signal bus: each milestone is a pipeline stage on one trace.
 // Filled (neon) up to the current stage, dashed for what is still ahead.
@@ -46,7 +46,7 @@ export function Roadmap({ onOpen }) {
           <h3>{text(s.title)}</h3>
           <p>{text(s.body)}</p>
           {s.chips && <div className="rm-chips">{s.chips.map(c => <span key={c}>{c}</span>)}</div>}
-          {s.projects && <div className="rm-projects">{s.projects.map(([id, label]) => <button key={id} type="button" onMouseEnter={() => chipFocus(id)} onMouseLeave={() => chipFocus(null)} onClick={e => fireBeam(e.currentTarget, () => onOpen?.(id), { from: id })}>{label}<span aria-hidden="true">↗</span></button>)}</div>}
+          {s.projects && <div className="rm-projects">{s.projects.map(([id, label]) => <button key={id} type="button" onMouseEnter={() => chipFocus(id)} onMouseLeave={() => chipFocus(null)} onClick={() => goToProject(id, onOpen)}>{label}<span aria-hidden="true">↗</span></button>)}</div>}
         </div>
       </li>)}
     </ol>

@@ -929,3 +929,4 @@ img { max-width: 100%; }
   .rm-card::before { display: none; }
   .education-grid.v2 .education-card { display: block; }
 }
+.project-card.card-picked { border-color: color-mix(in srgb, #b28bff 70%, var(--border)); box-shadow: 0 0 0 1px #b28bff55, 0 18px 50px -22px #9b6bffaa; transition: border-color .6s, box-shadow .6s; }

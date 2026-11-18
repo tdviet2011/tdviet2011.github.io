@@ -89,3 +89,14 @@ export function fireBeam(target, action, { delay = 340, from = null } = {}) {
   setTimeout(() => { g.remove(); }, travel + 900);
   setTimeout(() => { busy = false; action?.(); }, delay);
 }
+
+// Scroll to a project's card and light it up with a beam; the visitor opens it themselves.
+// Falls back to opening the project when the card is not on the page (e.g. filtered out).
+export function goToProject(id, fallback) {
+  const card = document.querySelector(`.project-card[data-project="${id}"]`);
+  if (!card) { fallback?.(id); return; }
+  chipFocus(id);
+  const smooth = !reduced();
+  card.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'center' });
+  setTimeout(() => { chipFocus(null); fireBeam(card, null, { from: id, delay: 0 }); card.classList.add('card-picked'); setTimeout(() => card.classList.remove('card-picked'), 2600); }, smooth ? 700 : 0);
+}
