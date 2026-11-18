@@ -10,6 +10,8 @@ import { Projects } from './sections/Projects';
 import { Research } from './sections/Research';
 import { Education } from './sections/Education';
 import { Contact } from './sections/Contact';
+import { BootIntro } from './components/BootIntro';
+import { LayoutCursor } from './components/LayoutCursor';
 
 function projectFromHash() {
   const prefix = '#project/';
@@ -37,5 +39,5 @@ export default function App() {
     setActiveProject(null);
     requestAnimationFrame(()=>opener.current?.focus({preventScroll:true}));
   }
-  return <><a className="skip-link" href="#main">{t.skip}</a><Header/><main id="main" tabIndex={-1}><Hero onOpen={openProject}/><About/><Skills/><Projects onOpen={openProject}/><Research onOpen={openProject}/><Education onOpen={openProject}/><Contact/></main><ProjectDialog project={activeProject} onClose={closeProject}/></>;
+  return <><a className="skip-link" href="#main">{t.skip}</a><Header/><main id="main" tabIndex={-1}><Hero onOpen={openProject}/><About/><Skills/><Projects onOpen={openProject}/><Research onOpen={openProject}/><Education onOpen={openProject}/><Contact/></main><ProjectDialog project={activeProject} onClose={closeProject}/><LayoutCursor/><BootIntro/></>;
 }
