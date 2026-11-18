@@ -5,6 +5,7 @@ import { ProjectCard } from '../components/ProjectCard';
 import { SectionHeading } from '../components/SectionHeading';
 import { Reveal } from '../components/Reveal';
 import { Icon } from '../components/Icon';
+import { fireBeam } from '../components/dataBeam';
 
 export function Projects({ onOpen }) {
   const { t, text, lang } = usePortfolio();
@@ -18,6 +19,6 @@ export function Projects({ onOpen }) {
     <div className="project-filters" role="group" aria-label={t.filterLabel}>{filters.map(([key,label])=><button key={key} aria-pressed={filter===key} className={filter===key?'selected':''} onClick={()=>setFilter(key)}>{label}{filter===key && <span className="filter-dot"/>}</button>)}</div>
     <p className="sr-only" role="status">{filtered.length} {t.resultCount}</p>
     {featured.length>0 && <div className="featured-grid">{featured.map(p=>{ const wide = p.id==='aes-256' || p.id==='qc-ldpc'; return <Reveal key={p.id} className={wide?'wide-reveal':''}><ProjectCard project={p} onOpen={onOpen} wide={wide} flip={p.id==='qc-ldpc'}/></Reveal>; })}</div>}
-    {supporting.length>0 && <div className="supporting-work"><div className="supporting-heading"><h3>{t.supporting}</h3><p>{t.supportingDesc}</p></div><div className="supporting-list">{supporting.map(p=><button className="supporting-row" key={p.id} onClick={()=>onOpen(p.id)}><span className="supporting-number">{p.number}</span><span className="supporting-text"><strong>{text(p.title)}</strong><span>{text(p.description)}</span></span><span className="supporting-tags">{p.tags.slice(0,2).map(tag=><span className="tag" key={tag}>{tag}</span>)}</span><span className="supporting-arrow"><Icon name="diagonal" size={20}/></span></button>)}</div></div>}
+    {supporting.length>0 && <div className="supporting-work"><div className="supporting-heading"><h3>{t.supporting}</h3><p>{t.supportingDesc}</p></div><div className="supporting-list">{supporting.map(p=><button className="supporting-row" key={p.id} onClick={e=>fireBeam(e.currentTarget,()=>onOpen(p.id))}><span className="supporting-number">{p.number}</span><span className="supporting-text"><strong>{text(p.title)}</strong><span>{text(p.description)}</span></span><span className="supporting-tags">{p.tags.slice(0,2).map(tag=><span className="tag" key={tag}>{tag}</span>)}</span><span className="supporting-arrow"><Icon name="diagonal" size={20}/></span></button>)}</div></div>}
   </section>;
 }

@@ -829,3 +829,21 @@ img { max-width: 100%; }
 .chip-lab.paused .hud .hud-status { fill: #e8a96b; }
 @keyframes hc-neon { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
 @keyframes hc-spark { from { stroke-dashoffset: 120; } to { stroke-dashoffset: -120; } }
+/* data beam: chip → selected element */
+.beam-layer { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 60; overflow: visible; }
+.beam-layer path { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: beam-draw .42s cubic-bezier(.2,.7,.2,1) forwards; }
+.beam-glow { stroke-width: 7; opacity: .55; filter: url(#beam-glow); }
+.beam-core { stroke: #f4eaff; stroke-width: 1.6; }
+.beam-packet { filter: url(#beam-glow); }
+.beam-origin { fill: none; stroke-width: 2; animation: beam-ring .6s ease-out forwards; transform-box: fill-box; transform-origin: center; }
+.beam-layer g { transition: opacity .6s ease; }
+.beam-layer g.beam-fade { opacity: 0; }
+@keyframes beam-draw { to { stroke-dashoffset: 0; } }
+@keyframes beam-ring { from { transform: scale(.4); opacity: 1; } to { transform: scale(3); opacity: 0; } }
+.data-lit { position: relative; animation: data-lit 1.1s ease-out; border-color: #8ef0ff !important; }
+@keyframes data-lit {
+  0% { box-shadow: 0 0 0 1px #8ef0ff, 0 0 0 0 #4fe3ff00, inset 0 0 0 0 #4fe3ff00; }
+  20% { box-shadow: 0 0 0 1px #8ef0ff, 0 0 28px 4px #4fe3ff88, inset 0 0 24px #9b6bff44; }
+  100% { box-shadow: 0 0 0 1px #8ef0ff00, 0 0 40px 10px #4fe3ff00, inset 0 0 0 #9b6bff00; }
+}
+.project-card { cursor: pointer; }
