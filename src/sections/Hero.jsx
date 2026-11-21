@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { usePortfolio, useReducedMotion } from '../hooks/usePortfolio';
 import { profile } from '../data/profile';
-import { HeroChip } from '../components/HeroChip';
+import { HeroChip } from '../components/LayeredChip';
 import { goToProject, chipFocus } from '../components/dataBeam';
 import { Icon } from '../components/Icon';
 
@@ -33,7 +33,7 @@ function TypeLine() {
 
 export function Hero({ onOpen }) {
   const { t } = usePortfolio();
-  return <section className="hero section-shell" id="home" aria-labelledby="hero-title">
+  return <section className="hero hero-layered section-shell" id="home" aria-labelledby="hero-title">
     <div className="hero-topline"><span className="eyebrow">DIGITAL HARDWARE / PORTFOLIO ’26</span><span className="hero-location">HCMC, VIETNAM <span aria-hidden="true">↗</span></span></div>
     <div className="hero-grid">
       <div className="hero-copy">

@@ -39,5 +39,5 @@ export default function App() {
     setActiveProject(null);
     requestAnimationFrame(()=>opener.current?.focus({preventScroll:true}));
   }
-  return <><a className="skip-link" href="#main">{t.skip}</a><Header/><main id="main" tabIndex={-1}><Hero onOpen={openProject}/><About/><Skills/><Projects onOpen={openProject}/><Research onOpen={openProject}/><Education onOpen={openProject}/><Contact/></main><ProjectDialog project={activeProject} onClose={closeProject}/><LayoutCursor/><BootIntro/></>;
+  return <><a className="skip-link" href="#main">{t.skip}</a><Header/><main id="main" tabIndex={-1}><Hero onOpen={openProject}/><About/><Skills onOpen={openProject}/><Projects onOpen={openProject}/><Research onOpen={openProject}/><Education onOpen={openProject}/><Contact/></main><ProjectDialog project={activeProject} onClose={closeProject}/><LayoutCursor/><BootIntro/></>;
 }

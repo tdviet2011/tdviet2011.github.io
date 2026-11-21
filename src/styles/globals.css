@@ -1197,3 +1197,4 @@ html.booting body { overflow: hidden; }
 .project-card:hover .mini-schematic { border-color: color-mix(in srgb, #4fe3ff 50%, var(--border)); }
 @media (max-width: 760px) { .mini-schematic { float: none; width: 100%; max-width: 280px; margin: 0 0 14px; } .cta-sep { display: none; } }
 .contact-bottom.cta-row { justify-content: flex-start; } .cta-row .cta-link { flex: none; }
+
