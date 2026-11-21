@@ -206,6 +206,7 @@ export const projects = [
       { value: '256 / 256', label: bi('Random bytes looped from tx to rx, same order, no frame error', 'Byte ngẫu nhiên nối vòng tx sang rx, đúng thứ tự, không lỗi khung') },
       { value: '4 / 4', label: bi('Deliberate bugs caught by the testbench', 'Lỗi cố ý bị testbench bắt') },
       { value: '161 ticks', label: bi('Per frame at 16 ticks per bit, start bit exactly 16', 'Mỗi khung ở 16 tick mỗi bit, start bit đúng 16') },
+      { value: '97 LUT', label: bi('75 FF · Vivado 2025.2 synthesis of uart_top, xc7k70t, no latches, 0 BRAM', '75 FF · tổng hợp Vivado 2025.2 của uart_top, xc7k70t, 0 BRAM') },
     ],
     figures: [
       { src: 'figures/uart-top-flow.svg', kind: 'wave', caption: bi('uart_top: the transmit path on the top row, the receive path below it, one baud_gen feeding both.', 'uart_top: đường phát ở hàng trên, đường thu ở hàng dưới, một baud_gen cấp cho cả hai.') },
@@ -213,8 +214,8 @@ export const projects = [
       { src: 'figures/uart-tx-blocks.svg', kind: 'wave', caption: bi('uart_tx block diagram: event logic, busy/run flip-flops, tick counter, bit counter and the 10-bit shift register.', 'Sơ đồ khối uart_tx: logic sự kiện, flip-flop busy/run, bộ đếm tick, bộ đếm bit và thanh ghi dịch 10 bit.') },
       { src: 'figures/uart-rx-blocks.svg', kind: 'wave', caption: bi('uart_rx block diagram: two-flip-flop synchronizer, IDLE/START/DATA/STOP state, mid-bit sampling.', 'Sơ đồ khối uart_rx: đồng bộ hai flip-flop, trạng thái IDLE/START/DATA/STOP, lấy mẫu giữa bit.') },
     ],
-    limits: bi('Simulation only: no synthesis or hardware run yet, so there are no LUT or timing numbers. Next: synthesize in Vivado, then try it on a board with a USB-UART adapter.', 'Chỉ mô phỏng: chưa tổng hợp hay chạy trên phần cứng nên chưa có số LUT hay timing. Tiếp theo: tổng hợp trong Vivado rồi thử trên board với mạch USB-UART.'),
-    evidence: bi('tb_uart_top in Vivado xsim, 21 Nov 2026: “TEST PASSED (6 nhom kiem tra, 0 loi, ket thuc luc 24677760 ns)”.', 'tb_uart_top trong Vivado xsim, 21/11/2026: “TEST PASSED (6 nhom kiem tra, 0 loi, ket thuc luc 24677760 ns)”.'),
+    limits: bi('Synthesis only (numbers are post-synthesis, not post-route) and no timing report or hardware run yet. Next: implement and check timing, then try it on a board with a USB-UART adapter.', 'Mới tổng hợp (số liệu sau tổng hợp, chưa sau route), chưa có báo cáo timing và chưa chạy trên phần cứng. Tiếp theo: implementation kiểm timing rồi thử trên board với mạch USB-UART.'),
+    evidence: bi('tb_uart_top in Vivado xsim, 21 Nov 2026: “TEST PASSED (6 nhom kiem tra, 0 loi, ket thuc luc 24677760 ns)”. Synthesis: Vivado utilization report, 21 Nov 2026.', 'tb_uart_top trong Vivado xsim, 21/11/2026: “TEST PASSED (6 nhom kiem tra, 0 loi, ket thuc luc 24677760 ns)”. Tổng hợp: báo cáo utilization Vivado, 21/11/2026.'),
     links: [profileLink],
   },
   {

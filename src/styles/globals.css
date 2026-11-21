@@ -1197,3 +1197,19 @@ html.booting body { overflow: hidden; }
 .project-card:hover .mini-schematic { border-color: color-mix(in srgb, #4fe3ff 50%, var(--border)); }
 @media (max-width: 760px) { .mini-schematic { float: none; width: 100%; max-width: 280px; margin: 0 0 14px; } .cta-sep { display: none; } }
 .contact-bottom.cta-row { justify-content: flex-start; } .cta-row .cta-link { flex: none; }
+
+/* Project roadmap (study plan) */
+.plan-work { margin-top: 57px; }
+.plan-level { margin-top: 28px; }
+.plan-level h4 { font: 500 13px 'Space Grotesk',sans-serif; color: var(--muted); letter-spacing: 0; margin-bottom: 12px; }
+.plan-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill,minmax(min(100%,320px),1fr)); gap: 0 28px; border-top: 1px solid var(--border); }
+.plan-item { padding: 16px 0; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.plan-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
+.plan-head strong { font: 500 15px 'Space Grotesk',sans-serif; letter-spacing: -.3px; flex: 1 1 100%; }
+.plan-kind { font: 400 10px 'JetBrains Mono',monospace; color: var(--subtle); }
+.plan-status { font: 500 10px 'JetBrains Mono',monospace; border: 1px solid var(--border); border-radius: 999px; padding: 1px 9px; color: var(--muted); }
+.plan-status-done { color: var(--accent); border-color: var(--accent); }
+.plan-item p { color: var(--muted); font-size: 12px; line-height: 1.6; margin: 0; }
+.plan-link { align-self: flex-start; font: 400 11px 'JetBrains Mono',monospace; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; padding: 4px 0; }
+.plan-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.plan-planned .plan-head strong { color: var(--muted); }
