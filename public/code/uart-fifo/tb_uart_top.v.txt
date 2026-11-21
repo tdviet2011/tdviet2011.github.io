@@ -1,0 +1,183 @@
+`timescale 1ns/1ps
+module tb_uart_top;
+    localparam DEPTH   = 16;
+    localparam BIT_STD = 864;                       // 54 * 16 chu ky
+
+    reg        clk = 0, rst_n = 0;
+    reg        wr_en = 0, rd_en = 0;
+    reg  [7:0] wr_data = 0;
+    wire [7:0] rd_data;
+    wire       tx_full, rx_empty, tx, frame_err, rx_overflow;
+
+    reg        loop = 1, rx_ext = 1;                // loop = 1: noi tx vao rx
+    wire       rx = loop ? tx : rx_ext;
+
+    uart_top #(.CLK_FREQ(100_000_000), .BAUD(115200), .DEPTH(DEPTH)) dut (
+        .clk(clk), .rst_n(rst_n),
+        .wr_en(wr_en), .wr_data(wr_data), .tx_full(tx_full),
+        .rd_en(rd_en), .rd_data(rd_data), .rx_empty(rx_empty),
+        .tx(tx), .rx(rx), .frame_err(frame_err), .rx_overflow(rx_overflow));
+
+    always #5 clk = ~clk;                           // 100 MHz
+
+    // ---------- bo doc va so sanh ----------
+    reg [7:0] exp [0:1023];
+    integer nw = 0, nr = 0, nfe = 0, errors = 0;
+    reg rd_enable = 0, rd_slow = 0, show_all = 1;
+    integer ntx = 0;
+    always @(negedge clk) begin
+        rd_en = 0;
+        if (rd_enable && !rx_empty && (!rd_slow || ({$random} % 8 == 0))) begin
+            if (nr >= nw || rd_data !== exp[nr]) begin
+                errors = errors + 1;
+                if (errors <= 8) $display("LOI: doc %h, mong doi %h (byte %0d)", rd_data, (nr < nw) ? exp[nr] : 8'hxx, nr);
+            end
+            if (show_all || nr < 8 || nr >= 248)
+                $display("  NHAN [%3d] = %h  (mong doi %h)  %s", nr, rd_data, (nr < nw) ? exp[nr] : 8'hxx, (nr < nw && rd_data === exp[nr]) ? "OK" : "SAI");
+            if (!show_all && nr == 8) $display("  ... (chi in 8 byte dau va 8 byte cuoi, loi thi luon in)");
+            nr = nr + 1;
+            rd_en = 1;
+        end
+    end
+    integer nstall = 0;                             // so chu ky tx_fifo day (cho thay co chan ghi)
+    always @(posedge clk) begin
+        if (frame_err) begin nfe = nfe + 1; $display("  >>> frame_err len 1 luc %0d ns", $time); end
+        if (tx_full)   nstall = nstall + 1;
+    end
+
+    // ---------- bo ghi vao tx_fifo (cho khi tx_full) ----------
+    task wr_byte(input [7:0] d);
+        begin
+            @(negedge clk); wr_en = 0;
+            while (tx_full) @(negedge clk);
+            wr_data = d; wr_en = 1;
+            if (show_all || ntx < 8 || ntx >= 248) $display("  GUI  [%3d] = %h", ntx, d);
+            ntx = ntx + 1;
+        end
+    endtask
+    task wr_end; begin @(negedge clk); wr_en = 0; end endtask
+
+    // ---------- bo phat gia lap tren chan rx (khi loop = 0) ----------
+    task send_ext(input [7:0] d, input integer stopmode);   // stopmode 1: stop sai
+        integer k;
+        begin
+            $display("  GUI tren chan rx ngoai: %h %s", d, (stopmode == 0) ? "(stop bit dung)" : "(stop bit SAI)");
+            rx_ext = 0; repeat (BIT_STD) @(negedge clk);
+            for (k = 0; k < 8; k = k + 1) begin rx_ext = d[k]; repeat (BIT_STD) @(negedge clk); end
+            if (stopmode == 0) begin rx_ext = 1; repeat (BIT_STD) @(negedge clk); end
+            else begin rx_ext = 0; repeat (BIT_STD*3/4) @(negedge clk); rx_ext = 1; repeat (BIT_STD/4) @(negedge clk); end
+        end
+    endtask
+
+    task do_reset;
+        begin
+            rst_n = 0; repeat (5) @(negedge clk); rst_n = 1; repeat (5) @(negedge clk);
+            nw = 0; nr = 0; nfe = 0; ntx = 0;
+        end
+    endtask
+
+    integer i, t, e0, t0;
+
+    initial begin
+        $display("==================== tb_uart_top ====================");
+        $display("DEPTH = %0d, BAUD = 115200, CLK = 100 MHz, 1 bit = %0d chu ky clk", DEPTH, BIT_STD);
+        loop = 1; rd_enable = 0;
+        do_reset;
+
+        // 0) trang thai sau reset
+        e0 = errors;
+        $display("[TEST 0] trang thai sau reset");
+        if (tx !== 1'b1 || tx_full !== 1'b0 || rx_empty !== 1'b1 || rx_overflow !== 1'b0 || frame_err !== 1'b0) begin
+            errors = errors + 1;
+            $display("  LOI: tx=%b tx_full=%b rx_empty=%b rx_overflow=%b frame_err=%b", tx, tx_full, rx_empty, rx_overflow, frame_err);
+        end
+        $display("  [%s] tx=%b tx_full=%b rx_empty=%b rx_overflow=%b frame_err=%b", (errors == e0) ? "PASS" : "FAIL", tx, tx_full, rx_empty, rx_overflow, frame_err);
+
+        // 1) khung ngoai co stop bit sai: frame_err 1 lan, khong byte nao vao rx_fifo
+        e0 = errors;
+        $display("[TEST 1] khung co stop bit sai tren chan rx ngoai");
+        loop = 0; rx_ext = 1; rd_enable = 1;
+        repeat (BIT_STD) @(negedge clk);
+        send_ext(8'h3C, 1);
+        repeat (2*BIT_STD) @(negedge clk);
+        if (nfe !== 1 || rx_empty !== 1'b1) begin
+            errors = errors + 1; $display("  LOI: frame_err=%0d (mong doi 1), rx_empty=%b (mong doi 1)", nfe, rx_empty);
+        end
+        $display("  [%s] frame_err = %0d xung (mong doi 1), rx_empty = %b (mong doi 1, khung loi khong vao FIFO)", (errors == e0) ? "PASS" : "FAIL", nfe, rx_empty);
+
+        // 2) khung ngoai dung: byte phai xuat hien o rd_data
+        e0 = errors;
+        $display("[TEST 2] khung dung tren chan rx ngoai (byte A5)");
+        exp[nw] = 8'hA5; nw = nw + 1;
+        send_ext(8'hA5, 0);
+        repeat (2*BIT_STD) @(negedge clk);
+        if (nr !== nw) begin errors = errors + 1; $display("  LOI: khong doc duoc byte tu chan rx"); end
+        $display("  [%s] da doc %0d/%0d byte, rx_overflow = %b", (errors == e0) ? "PASS" : "FAIL", nr, nw, rx_overflow);
+
+        // 3) noi vong tx -> rx: ghi lien tuc 256 byte ngau nhien, doc ra cham ngau nhien
+        e0 = errors; t0 = $time;
+        $display("[TEST 3] noi vong tx -> rx, 256 byte ngau nhien ghi lien tuc");
+        loop = 1; rd_slow = 1; show_all = 0; nw = 0; nr = 0; nfe = 0; nstall = 0; ntx = 0;
+        for (i = 0; i < 256; i = i + 1) begin
+            exp[nw] = {$random}; nw = nw + 1;
+            wr_byte(exp[nw-1]);
+        end
+        wr_end;
+        t = 0;
+        while (nr < nw && t < 300) begin repeat (BIT_STD) @(negedge clk); t = t + 1; end
+        repeat (2*BIT_STD) @(negedge clk);
+        if (nr !== 256 || rx_empty !== 1'b1 || tx_full !== 1'b0) begin
+            errors = errors + 1; $display("  LOI: nhan %0d/256 byte, rx_empty=%b, tx_full=%b", nr, rx_empty, tx_full);
+        end
+        if (nfe !== 0 || rx_overflow !== 1'b0) begin
+            errors = errors + 1; $display("  LOI: frame_err=%0d, rx_overflow=%b (mong doi 0, 0)", nfe, rx_overflow);
+        end
+        if (tx !== 1'b1) begin errors = errors + 1; $display("  LOI: tx khong ve 1 khi ranh"); end
+        $display("  [%s] ghi 256, doc %0d, frame_err = %0d, rx_overflow = %b, mat %0d ns", (errors == e0) ? "PASS" : "FAIL", nr, nfe, rx_overflow, $time - t0);
+        $display("         tx_fifo da day %0d chu ky (>0 nghia la co kiem tra co chan khi tx_full)", nstall);
+
+        // 4) ngung doc: gui DEPTH+4 byte, rx_fifo day -> rx_overflow, chi giu DEPTH byte dau
+        e0 = errors;
+        $display("[TEST 4] ngung doc, gui %0d byte (nhieu hon DEPTH %0d)", DEPTH + 4, DEPTH);
+        rd_enable = 0; rd_slow = 0; show_all = 1; nw = 0; nr = 0; ntx = 0;
+        for (i = 0; i < DEPTH + 4; i = i + 1) begin
+            if (i < DEPTH) begin exp[nw] = 8'h40 + i; nw = nw + 1; end
+            wr_byte(8'h40 + i);
+        end
+        wr_end;
+        repeat ((DEPTH + 4) * 10 * BIT_STD + 3*BIT_STD) @(negedge clk);
+        $display("    sau khi gui xong: rx_overflow = %b (mong doi 1), rx_empty = %b (mong doi 0)", rx_overflow, rx_empty);
+        if (rx_overflow !== 1'b1) begin errors = errors + 1; $display("  LOI: rx_overflow khong len khi FIFO nhan day"); end
+        rd_enable = 1;
+        repeat (4*DEPTH) @(negedge clk);
+        $display("    doc ra %0d byte (mong doi %0d), rx_empty = %b (mong doi 1)", nr, DEPTH, rx_empty);
+        if (nr !== DEPTH || rx_empty !== 1'b1) begin
+            errors = errors + 1; $display("  LOI: doc duoc %0d byte (mong doi %0d), rx_empty=%b", nr, DEPTH, rx_empty);
+        end
+        if (rx_overflow !== 1'b1) begin errors = errors + 1; $display("  LOI: rx_overflow khong giu sau khi doc het"); end
+        exp[nw] = 8'h77; nw = nw + 1;
+        wr_byte(8'h77); wr_end;
+        repeat (2*10*BIT_STD) @(negedge clk);
+        if (nr !== nw || rx_overflow !== 1'b1) begin
+            errors = errors + 1; $display("  LOI: sau overflow nhan %0d/%0d byte, rx_overflow=%b (mong doi giu 1)", nr, nw, rx_overflow);
+        end
+        $display("  [%s] FIFO giu dung %0d byte dau, byte them sau do van nhan duoc, rx_overflow giu = %b", (errors == e0) ? "PASS" : "FAIL", DEPTH, rx_overflow);
+
+        // 5) reset xoa rx_overflow
+        e0 = errors;
+        $display("[TEST 5] reset xoa rx_overflow va FIFO");
+        rd_enable = 0;
+        do_reset;
+        if (rx_overflow !== 1'b0 || rx_empty !== 1'b1 || tx_full !== 1'b0) begin
+            errors = errors + 1; $display("  LOI: reset khong xoa rx_overflow/FIFO");
+        end
+        $display("  [%s] rx_overflow = %b, rx_empty = %b, tx_full = %b", (errors == e0) ? "PASS" : "FAIL", rx_overflow, rx_empty, tx_full);
+
+        $display("=====================================================");
+        if (errors == 0) $display("TEST PASSED  (6 nhom kiem tra, 0 loi, ket thuc luc %0d ns)", $time);
+        else             $display("TEST FAILED  (%0d loi)", errors);
+        $finish;
+    end
+
+    initial begin #800_000_000; $display("TEST FAILED (timeout)"); $finish; end
+endmodule

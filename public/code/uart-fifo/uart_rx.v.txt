@@ -1,0 +1,95 @@
+// ============================================================================
+// uart_rx : bộ nhận UART 8N1, lấy mẫu 16 lần mỗi bit
+//   - tick16 : xung 1 chu kỳ, cứ 54 chu kỳ clk một lần (từ baud_gen)
+//   - data   : byte nhận được, chỉ hợp lệ khi valid = 1
+//   - valid  : xung 1 chu kỳ khi stop bit = 1 (khung đúng)
+//   - frame_err : xung 1 chu kỳ khi stop bit = 0 (khung lỗi)
+// ============================================================================
+module uart_rx(
+input      clk,
+input      rst_n,
+input      tick16,
+input      rx,
+output reg [7:0] data,
+output reg valid,
+output reg frame_err
+    );
+reg  [1:0] state;
+reg  [3:0] tcnt;          // đếm tick: START đếm 0..7, DATA và STOP đếm 0..15
+reg  [2:0] bcnt;          // đếm số bit dữ liệu đã lấy mẫu, 0..7
+reg rx_s1,rx_s2;          // 2 flip-flop đồng bộ rx (rx đến từ ngoài, không đồng bộ clk)
+
+localparam [1:0] IDLE  = 2'b00,   // rảnh, chờ start bit
+                 START = 2'B01,   // đang đợi tới giữa start bit
+                 DATA  = 2'B10,   // đang nhận 8 bit dữ liệu
+                 STOP  = 2'B11;   // đang đợi tới giữa stop bit
+
+// ---- các sự kiện (tổ hợp) ----
+wire start_det = (state == IDLE & ~rx_s2);                    // thấy cạnh xuống: bắt đầu start bit
+wire mid_start = (state == START & tick16 & (tcnt == 7 ));    // tới giữa start bit (sau 8 tick)
+wire samp      = (state == DATA  & tick16 & (tcnt == 15));    // giữa 1 bit dữ liệu: lấy mẫu (cách nhau 16 tick)
+wire last_bit  =                     ( samp &(bcnt == 7));    // đã lấy mẫu bit thứ 8 (bit cuối)
+wire stop_samp = (state == STOP  & tick16 & (tcnt == 15));    // giữa stop bit: kết thúc khung
+wire clr = start_det | mid_start | samp | stop_samp;          // các lúc cần đếm lại tcnt từ 0
+
+    // ---- khối 1: đồng bộ rx qua 2 flip-flop, reset về 1 vì đường rảnh ở mức 1 ----
+    always @( posedge clk or negedge rst_n) begin
+            if (!rst_n) begin
+                 rx_s1 <= 1'b1;
+                 rx_s2 <= 1'b1;
+                end else begin
+                        rx_s1 <= rx;
+                        rx_s2 <= rx_s1;  
+                    end
+    end
+    
+    // ---- khối 2: chuyển trạng thái (chỉ khối này được gán state) ----
+                always @( posedge clk or negedge rst_n) begin
+                        if (!rst_n) begin
+                                state <= IDLE;
+                            end else if (start_det) begin 
+                                     state <= START;                       // IDLE  -> START: thấy start bit
+                                    end else if (mid_start & (rx_s2 == 0)) begin
+                                                 state <= DATA;            // START -> DATA : giữa start bit vẫn bằng 0, hợp lệ
+                                             end else if (mid_start & (rx_s2 == 1)) begin
+                                                       state <= IDLE;      // START -> IDLE : đã lên 1, là nhiễu, bỏ qua
+                                                      end else if (last_bit) begin
+                                                                state <= STOP;   // DATA -> STOP: đủ 8 bit
+                                                               end else if (stop_samp) begin
+                                                                            state <= IDLE;   // STOP -> IDLE: xong khung
+                                                                        end
+                end
+
+    // ---- khối 3: tcnt, bcnt, data, valid, frame_err (mỗi thanh ghi chỉ gán ở đúng 1 khối) ----
+               always @( posedge clk or negedge rst_n) begin
+                       if (!rst_n) begin
+                            tcnt  <= 4'd0;
+                            bcnt  <= 3'd0;
+                            data  <= 8'd0;
+                            valid <= 1'b0;
+                            frame_err <= 1'b0;
+                        end else begin
+                                    // mặc định hai cờ về 0 để chúng chỉ cao đúng 1 chu kỳ
+                                    // (nhánh stop_samp bên dưới sẽ ghi đè)
+                                    valid     <= 1'b0;
+                                    frame_err <= 1'b0;
+
+                                    // tcnt: về 0 khi có sự kiện, còn lại tăng 1 mỗi tick16 (trừ lúc IDLE)
+                                    if (clr)                          tcnt <= 4'd0;
+                                    else if (tick16 & (state != IDLE)) tcnt <= tcnt + 4'd1;
+
+                                    // bcnt: về 0 khi bắt đầu khung, tăng 1 mỗi lần lấy mẫu một bit
+                                    if (start_det)  bcnt <= 3'd0;
+                                    else if (samp)  bcnt <= bcnt + 3'd1;
+                                    
+                                    // data: dịch phải, bit mới vào MSB; sau 8 lần bit đầu tiên (LSB) về data[0]
+                            if (samp) data[7:0] <= {rx_s2,data[7:1]};
+                                    // giữa stop bit: =1 là khung đúng (valid), =0 là lỗi khung (frame_err)
+                                    else if(stop_samp) begin
+                                                valid <= rx_s2;
+                                                frame_err <= ~rx_s2;
+                                             end
+                        end
+              end
+
+endmodule

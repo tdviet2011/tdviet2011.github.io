@@ -10,6 +10,7 @@ const LABS = {
   'floating-point-alu': ['demo', 'wave', 'code'],
   'aes-256': ['demo', 'wave', 'code'],
   'tiny-mnist': ['wave', 'code'],
+  'uart-fifo': ['wave', 'code'],
 };
 export const hasLab = (id) => !!LABS[id];
 let nextTab = null;

@@ -1,0 +1,78 @@
+// ============================================================================
+// uart_top : UART 8N1 có FIFO hai chiều
+//   phía người dùng : wr_en/wr_data/tx_full (gửi), rd_en/rd_data/rx_empty (nhận)
+//   phía chân       : tx, rx
+//   cờ              : frame_err (xung 1 chu kỳ), rx_overflow (giữ tới khi reset)
+// ============================================================================
+module uart_top #(
+    parameter CLK_FREQ = 100_000_000,
+    parameter BAUD     = 115200,
+    parameter DEPTH    = 16                  // nên là lũy thừa của 2
+)(
+    input        clk,
+    input        rst_n,
+    // đường phát
+    input        wr_en,
+    input  [7:0] wr_data,
+    output       tx_full,
+    // đường thu
+    input        rd_en,
+    output [7:0] rd_data,
+    output       rx_empty,
+    // chân UART
+    output       tx,
+    input        rx,
+    // cờ
+    output       frame_err,
+    output reg   rx_overflow
+);
+    wire       tick16;
+    wire       tx_empty, busy, start;
+    wire [7:0] tx_data;
+    wire [7:0] rx_data;
+    wire       rx_valid, rx_full;
+
+    // ---- nhịp lấy mẫu chung cho TX và RX ----
+    baud_gen #(.CLK_FREQ(CLK_FREQ), .BAUD(BAUD)) u_baud (
+        .clk(clk), .rst_n(rst_n), .tick16(tick16)
+    );
+
+    // ---- đường phát ----
+    // start và pop (rd_en của tx_fifo) là cùng một dây: cao đúng 1 chu kỳ,
+    // vì busy của uart_tx lên ngay sau chu kỳ nhận start
+    assign start = ~tx_empty & ~busy;
+
+    sync_fifo #(.WIDTH(8), .DEPTH(DEPTH)) u_tx_fifo (
+        .clk(clk), .rst_n(rst_n),
+        .wr_en(wr_en), .wr_data(wr_data),
+        .rd_en(start), .rd_data(tx_data),
+        .full(tx_full), .empty(tx_empty), .count()
+    );
+
+    uart_tx u_tx (
+        .clk(clk), .rst_n(rst_n),
+        .start(start), .tick16(tick16), .data(tx_data),
+        .busy(busy), .tx(tx)
+    );
+
+    // ---- đường thu ----
+    uart_rx u_rx (
+        .clk(clk), .rst_n(rst_n),
+        .tick16(tick16), .rx(rx),
+        .data(rx_data), .valid(rx_valid), .frame_err(frame_err)
+    );
+
+    // FIFO nhận đầy thì không ghi, byte bị bỏ
+    sync_fifo #(.WIDTH(8), .DEPTH(DEPTH)) u_rx_fifo (
+        .clk(clk), .rst_n(rst_n),
+        .wr_en(rx_valid & ~rx_full), .wr_data(rx_data),
+        .rd_en(rd_en), .rd_data(rd_data),
+        .full(rx_full), .empty(rx_empty), .count()
+    );
+
+    // rx_overflow: có byte đến mà FIFO nhận đã đầy, giữ tới khi reset
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n)                     rx_overflow <= 1'b0;
+        else if (rx_valid & rx_full)    rx_overflow <= 1'b1;
+    end
+endmodule

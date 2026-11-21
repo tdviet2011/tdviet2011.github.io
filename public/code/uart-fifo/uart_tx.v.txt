@@ -1,0 +1,51 @@
+module uart_tx(
+input         clk,
+input         rst_n,
+input         start,
+input         tick16,
+input   [7:0] data,
+output  reg   busy,
+output    tx
+);
+
+reg run;
+reg [3:0] tcnt;
+reg [3:0] bcnt;
+reg [9:0] shreg;
+wire accept = start & ~busy;
+wire first  = busy & ~run & tick16;
+wire go = run & tick16;
+wire bit_done = go & (tcnt == 15);
+wire last = bit_done & (bcnt == 9);
+assign tx = (run == 1) ? shreg[0]: 1'b1;
+    always @(posedge clk or negedge rst_n) begin
+            if (!rst_n) begin
+                busy <= 1'b0;
+                tcnt <= 1'b0;
+                run  <= 1'b0;
+                bcnt        <=  1'b0;
+                shreg[9:0] <= 10'h3FF;
+            end else if(accept) begin
+                       busy        <=  1'b1;
+                       bcnt        <=  1'b0;
+                       shreg[9:0] <= {1'b1,data[7:0],1'b0}; 
+                     end else if(first) begin
+                             run  <= 1'b1;
+                             tcnt <= 1'b0;
+                         end else if (go) begin                         
+                                tcnt <= tcnt + 1'b1;
+                                if (bit_done) begin
+                                        shreg[9:0] <= {1'b1,shreg[9:1]};
+                                        bcnt <= bcnt +1'b1; 
+                                        tcnt <= 1'b0;
+                                    end 
+                               if (last) begin
+                                                busy <= 0;
+                                                run <= 0;
+                                   end 
+                            end
+    end
+
+
+
+endmodule
