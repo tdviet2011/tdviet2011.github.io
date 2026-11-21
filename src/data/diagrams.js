@@ -146,6 +146,38 @@ export const diagrams = {
     ],
   },
 
+  // uart_top.v — UART with TX and RX FIFOs
+  uart: {
+    w: 1000, h: 510,
+    alt: bi('Block diagram of uart_top: transmit and receive paths with FIFOs and one baud generator', 'Sơ đồ khối uart_top: đường phát và đường thu có FIFO, dùng chung một bộ tạo baud'),
+    groups: [{ x: 150, y: 14, w: 840, h: 486, label: 'uart_top · 100 MHz · 115200 8N1' }],
+    nodes: [
+      { id: 'wr', tone: 'io', x: 8, y: 56, w: 120, h: 88, title: bi('Host write', 'Bên ghi'), lines: ['wr_en', 'wr_data[7:0]', 'tx_full'] },
+      { id: 'txf', tone: 'mem', x: 170, y: 50, w: 170, h: 100, title: 'tx_fifo', lines: ['8 bit × 16', bi('first-word-fall-through', 'first-word-fall-through'), 'full · empty'] },
+      { id: 'tx', tone: 'core', x: 390, y: 50, w: 190, h: 100, title: 'uart_tx', lines: bi(['8N1 · 10-bit shift register', 'start = ~empty & ~busy', 'busy'], ['8N1 · thanh ghi dịch 10 bit', 'start = ~empty & ~busy', 'busy']) },
+      { id: 'txp', tone: 'io', x: 640, y: 75, w: 100, h: 50, title: 'tx' },
+      { id: 'baud', tone: 'ctrl', x: 390, y: 190, w: 190, h: 70, title: 'baud_gen', lines: bi(['DIV = 54', '1 tick16 pulse every 54 clk'], ['DIV = 54', '1 xung tick16 mỗi 54 clk']) },
+      { id: 'rxp', tone: 'io', x: 640, y: 335, w: 100, h: 50, title: 'rx' },
+      { id: 'rx', tone: 'core', x: 390, y: 310, w: 190, h: 100, title: 'uart_rx', lines: bi(['2-FF synchronizer', 'sample mid-bit at tick 8 / 16', 'valid · frame_err'], ['đồng bộ 2 flip-flop', 'lấy mẫu giữa bit ở tick 8 / 16', 'valid · frame_err']) },
+      { id: 'rxf', tone: 'mem', x: 170, y: 310, w: 170, h: 100, title: 'rx_fifo', lines: ['8 bit × 16', 'wr_en = valid & ~full', 'full · empty'] },
+      { id: 'rd', tone: 'io', x: 8, y: 316, w: 120, h: 88, title: bi('Host read', 'Bên đọc'), lines: ['rd_en', 'rd_data[7:0]', 'rx_empty'] },
+      { id: 'st', tone: 'fault', x: 800, y: 310, w: 180, h: 100, title: bi('Status flags', 'Cờ trạng thái'), lines: bi(['frame_err: 1-cycle pulse', 'rx_overflow: sticky'], ['frame_err: xung 1 chu kỳ', 'rx_overflow: giữ lại']) },
+    ],
+    edges: [
+      { d: 'M128 100 H170', label: '', lx: 0, ly: 0 },
+      { d: 'M340 100 H390', label: 'data', lx: 365, ly: 94 },
+      { d: 'M580 100 H640', label: 'txd', lx: 610, ly: 94 },
+      { d: 'M420 150 V172 H255 V150', tone: 'ctrl', label: 'start = pop', lx: 337, ly: 166 },
+      { d: 'M520 190 V150', tone: 'ctrl', label: 'tick16', lx: 526, ly: 174, anchor: 'start' },
+      { d: 'M520 260 V310', tone: 'ctrl', label: 'tick16', lx: 526, ly: 292, anchor: 'start' },
+      { d: 'M640 360 H580', label: 'rxd', lx: 610, ly: 354 },
+      { d: 'M390 360 H340', label: 'data', lx: 365, ly: 354 },
+      { d: 'M170 360 H128' },
+      { d: 'M450 410 V448 H890 V410', tone: 'fault', label: 'frame_err', lx: 670, ly: 442 },
+      { d: 'M255 410 V474 H930 V410', tone: 'fault', label: bi('valid & full → rx_overflow', 'valid & full → rx_overflow'), lx: 600, ly: 468 },
+    ],
+  },
+
   // LDPCg5p16codec — reference QC-LDPC codec with fixes marked
   ldpc: {
     w: 1000, h: 500,
